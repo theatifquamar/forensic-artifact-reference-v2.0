@@ -1,0 +1,22 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5AC8FA"/>
+      <stop offset="100%" stop-color="#0A84FF"/>
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2C2C2E"/>
+      <stop offset="100%" stop-color="#1C1C1E"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="62" height="62" rx="15" fill="url(#bgGrad)" stroke="#3A3A3C" stroke-width="1"/>
+  <g fill="none" stroke="#98989D" stroke-width="1.6" stroke-linecap="round">
+    <path d="M 32 18 a 10 10 0 0 1 10 10 c 0 4 -1 7 -2.2 9.4" />
+    <path d="M 32 21 a 7 7 0 0 1 7 7 c 0 5 -1.4 8.4 -3 11" />
+    <path d="M 32 24 a 4 4 0 0 1 4 4 c 0 6 -2 10.5 -4.6 14" />
+    <path d="M 24.5 27.5 c -1 2 -1.5 4.2 -1.5 6.5 c 0 6 2.4 10.8 5.6 14.6" />
+    <path d="M 27 24 c -1.6 2.6 -2.5 5.8 -2.5 10 c 0 6.5 2.6 11.4 6 15.4" />
+  </g>
+  <circle cx="34" cy="34" r="15" fill="none" stroke="url(#ringGrad)" stroke-width="3"/>
+  <line x1="44.6" y1="44.6" x2="53" y2="53" stroke="url(#ringGrad)" stroke-width="3.4" stroke-linecap="round"/>
+</svg>
