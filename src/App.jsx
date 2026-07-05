@@ -3,7 +3,6 @@ import { DB, countArtifacts, searchArtifacts } from "./database.js";
 import Logo from "./Logo.jsx";
 import PolicyPage from "./PolicyPage.jsx";
 import CopyButton, { formatArtifact } from "./CopyButton.jsx";
-import AdWidget from "./AdWidget.jsx";
 import { ThemeProvider, useTheme, OS_TINTS } from "./ThemeContext.jsx";
 
 const CAT_SYMBOL = {
@@ -392,7 +391,7 @@ function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, 
           );
         })}
 
-        <AdWidget theme={theme} variant="sidebar" />
+      
       </div>
 
       <div style={ST.sideFooter}>
@@ -425,7 +424,7 @@ function CategoryView({ os, cat, artifacts, expanded, setExpanded, ST, theme }) 
             expanded={expanded === i} onToggle={() => setExpanded(expanded === i ? null : i)} />
         ))}
       </div>
-      <AdWidget theme={theme} variant="content" />
+
     </div>
   );
 }
