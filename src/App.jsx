@@ -566,7 +566,7 @@ function ArtifactCard({ artifact, tint, badge, expanded, onToggle, ST, os, cat, 
               title={bookmarked ? "Remove bookmark" : "Bookmark this artifact"}
               style={{ background: "none", border: "none", cursor: "pointer", padding: "3px 4px", display: "flex", color: bookmarked ? "#FF9F0A" : ST._textTertiary }}
             >
-              <Sym name={bookmarked ? "star" : "star-outline"} size={14} />
+              <Sym name={bookmarked ? "star" : "star-outline"} size={14} color={bookmarked ? "#FF9F0A" : ST._textTertiary} />
             </button>
           )}
           <CopyButton

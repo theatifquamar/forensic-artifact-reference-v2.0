@@ -10,7 +10,20 @@ All notable changes to the Forensic Artifact Reference project, by version.
 
 ---
 
-## v1.3 — Investigator Enrichment Fields, Bookmarking, Ad Removal (current)
+## v1.4 — Full 378-Artifact Enrichment, Star Color Fix (current)
+
+**Bug fixes**
+- Fixed `ReferenceError: isBookmarked is not defined` crash that made the entire app render blank — `CategoryView`'s function signature was missing `isBookmarked`/`toggleBookmark` in its destructured props despite the parent component correctly passing them in
+- Fixed bookmark star icon not changing color when toggled — explicitly pass `color` to the icon instead of relying on CSS `currentColor` inheritance through the button wrapper
+
+**Full artifact enrichment (100% coverage)**
+- All 378 artifacts across all 4 platforms (Windows 146, Linux 84, macOS 76, Android 72) now have complete MITRE ATT&CK mappings, quick commands (where a meaningful one exists), related-artifact cross-references, retention/volatility notes, and source citations
+- Previously only 12 flagship artifacts had this enrichment as a proof-of-concept; this release completes the remaining 366
+- Recovered one artifact ("Sysmon Event Log" under Windows → Process Execution) that was accidentally dropped during a prior enrichment pass — verified against the last known-good backup and restored with full enrichment
+
+---
+
+## v1.3 — Investigator Enrichment Fields, Bookmarking, Ad Removal
 
 **Ads removed**
 - Fully removed `AdWidget.jsx` and its two usages in `App.jsx` per project decision to drop advertising

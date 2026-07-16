@@ -10,13 +10,13 @@ The artifact content in this reference was generated with AI assistance and has 
 
 ## Features
 
-- **378+ artifacts, 58 categories** across 4 platforms, fully searchable (⌘K) — search covers artifact names, tools, paths, event IDs, MITRE ATT&CK IDs, and related-artifact names
+- **378 artifacts, 58 categories** across 4 platforms, fully searchable (⌘K) — search covers artifact names, tools, paths, event IDs, MITRE ATT&CK IDs, and related-artifact names
 - **Dark / light mode**, persisted across visits, respects system preference by default
-- **One-tap copy** on every artifact card — copies a clean, formatted text summary including all enriched fields
-- **Bookmarking** — star any artifact to save it to a personal "Bookmarked Artifacts" list for the current case, persisted in the browser (`src/useBookmarks.js`)
-- **Investigator-focused enrichment fields** (optional, populated on a growing subset of artifacts — see below):
+- **One-tap copy** on every artifact card and every individual command — copies a clean, formatted text summary including all enriched fields
+- **Bookmarking** — star any artifact (star turns solid amber when bookmarked) to save it to a personal "Bookmarked Artifacts" list for the current case, persisted in the browser (`src/useBookmarks.js`)
+- **Every one of the 378 artifacts is fully enriched** with:
   - **MITRE ATT&CK technique links** — click through to the official ATT&CK page for that technique
-  - **Quick commands** — copy-pasteable one-liners to pull/inspect the artifact immediately
+  - **Quick commands** — copy-pasteable one-liners to pull/inspect the artifact immediately (where a meaningful command exists)
   - **Related artifacts** — cross-references to artifacts investigators typically triangulate with
   - **Retention / volatility notes** — how long the artifact typically survives before rotation/overwrite
   - **Sources** — where the artifact is commonly documented, for credibility and further reading
@@ -109,6 +109,7 @@ public/
 
 - React 18 + Vite
 - No external UI libraries — hand-built, macOS-inspired interface
+- No external ad network integrated yet (see `AdWidget.jsx`)
 
 ## Copyright
 
