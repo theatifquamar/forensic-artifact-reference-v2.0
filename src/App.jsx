@@ -549,7 +549,7 @@ function BookmarksView({ bookmarks, expanded, setExpanded, ST, theme, isBookmark
 }
 
 function ArtifactCard({ artifact, tint, badge, expanded, onToggle, ST, os, cat, isBookmarked, toggleBookmark }) {
-  const bookmarked = isBookmarked ? isBookmarked(artifact) : false;
+  const bookmarked = isBookmarked ? isBookmarked(artifact, os, cat) : false;
   return (
     <div style={{ ...ST.card, ...(expanded ? { boxShadow: `0 0 0 1px ${tint}55, 0 8px 24px rgba(0,0,0,0.35)` } : {}) }}>
       <button style={ST.cardHead} onClick={onToggle}>
@@ -714,9 +714,9 @@ function buildStyles(theme) {
     menuBold: { fontWeight: 600, color: t.text },
     menuItem: { color: t.textSecondary, cursor: "pointer" },
 
-    windowWrap: { flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "26px 20px", minHeight: 0 },
+    windowWrap: { flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "14px 16px", minHeight: 0 },
     window: {
-      width: "100%", maxWidth: 1180, height: "calc(100vh - 90px)", maxHeight: 820,
+      width: "100%", maxWidth: 1680, height: "calc(100vh - 66px)", maxHeight: 1100,
       background: t.windowBg,
       borderRadius: 12, overflow: "hidden",
       boxShadow: t.shadow,

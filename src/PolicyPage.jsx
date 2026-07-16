@@ -147,6 +147,29 @@ export default function PolicyPage({ onBack, time }) {
               </p>
             </Section>
 
+            <Section title="Trademarks & Third-Party Names" flag P={P}>
+              <p>
+                This reference mentions the names of third-party tools, software, training courses, and organizations
+                — for example (without limitation) forensic tools such as <em>EvtxECmd, Registry Explorer, Autopsy,
+                Cellebrite, Magnet AXIOM, Volatility, Mimikatz, Sysmon,</em> and similar; and training/certification
+                references such as <em>SANS FOR500, FOR508, FOR518, FOR585,</em> and similar course codes.
+              </p>
+              <p>
+                All such names, trademarks, service marks, and course codes are the property of their respective
+                owners. <strong>They are used here strictly for identification and reference purposes only</strong> —
+                to tell you which real-world tool or course commonly documents a given artifact — and their mention
+                does not imply any sponsorship, endorsement, affiliation, certification, or partnership between this
+                site and the trademark owner, nor between this site and SANS Institute, Eric Zimmermann, Cellebrite,
+                Magnet Forensics, Microsoft, or any other named organization or tool author.
+              </p>
+              <p>
+                We do not claim any ownership or rights over these names, and we make no representation as to the
+                accuracy of a tool's current features, licensing terms, or pricing — always refer to the tool or
+                course provider's own official website for current, authoritative information. If a trademark owner
+                has concerns about how their mark is referenced here, corrections are welcome (see below).
+              </p>
+            </Section>
+
             <Section title="Feedback & Corrections" P={P}>
               <p>
                 If you find an inaccurate artifact path, outdated tool reference, or an error of any kind, corrections
@@ -158,6 +181,7 @@ export default function PolicyPage({ onBack, time }) {
             <div style={P.footer}>
               <div>Built as a community reference tool · Content AI-assisted · Verify before operational use</div>
               <div style={P.copyright}>© {new Date().getFullYear()} atifquamar. All rights reserved.</div>
+              <div style={P.trademarkNote}>All third-party product names, logos, and trademarks referenced are property of their respective owners.</div>
             </div>
           </div>
         </div>
@@ -253,5 +277,6 @@ function buildStyles(t) {
       display: "flex", flexDirection: "column", gap: 6,
     },
     copyright: { fontSize: 11, color: t.textQuaternary, fontWeight: 500 },
+    trademarkNote: { fontSize: 10.5, color: t.textQuaternary, lineHeight: 1.6, maxWidth: 480, marginLeft: "auto", marginRight: "auto" },
   };
 }

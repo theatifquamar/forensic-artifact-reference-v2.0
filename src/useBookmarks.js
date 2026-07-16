@@ -32,7 +32,10 @@ export function useBookmarks() {
   }, [bookmarks]);
 
   const isBookmarked = useCallback(
-    (a) => bookmarks.some((b) => b.key === keyFor(a)),
+    (a, os, cat) => {
+      const key = `${a._os || os}::${a._cat || cat}::${a.artifact}`;
+      return bookmarks.some((b) => b.key === key);
+    },
     [bookmarks]
   );
 

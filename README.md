@@ -109,6 +109,7 @@ public/
 
 - React 18 + Vite
 - No external UI libraries — hand-built, macOS-inspired interface
+- No external ad network integrated yet (see `AdWidget.jsx`)
 
 ## Copyright
 
