@@ -447,7 +447,7 @@ function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, 
   );
 }
 
-function CategoryView({ os, cat, artifacts, expanded, setExpanded, ST, theme }) {
+function CategoryView({ os, cat, artifacts, expanded, setExpanded, ST, theme, isBookmarked, toggleBookmark }) {
   if (!os || !cat) return <Empty text="Select a platform to begin." ST={ST} />;
   const tint = OS_TINTS[os];
   return (
