@@ -10,7 +10,33 @@ All notable changes to the Forensic Artifact Reference project, by version.
 
 ---
 
-## v1.2 — Scalability, Theming, Copy, Ads, SEO (current)
+## v1.3 — Investigator Enrichment Fields, Bookmarking, Ad Removal (current)
+
+**Ads removed**
+- Fully removed `AdWidget.jsx` and its two usages in `App.jsx` per project decision to drop advertising
+
+**Investigator-focused data enrichment**
+- Added 5 new optional fields to the artifact data model: `mitre` (MITRE ATT&CK technique IDs, linked to attack.mitre.org), `commands` (copy-pasteable extraction one-liners), `related` (cross-referenced artifact names), `retention` (volatility/persistence notes), `sources` (documentation credibility references)
+- Populated a representative set of 12 flagship artifacts across all 4 platforms (Windows: Logon Events, Prefetch, AmCache, Shimcache, Run keys, Scheduled Tasks, Sysmon, USBSTOR; Linux: auth.log, bash_history; macOS: FSEvents, LaunchAgents; Android: Call Log, WhatsApp) as a template for further expansion
+- Updated `src/artifacts/_template.js` with full annotated examples of all new fields
+- Extended `searchArtifacts()` in `database.js` to match against MITRE IDs, related artifact names, and sources
+
+**Bookmarking / case notes**
+- New `src/useBookmarks.js` — localStorage-backed hook to star/unstar any artifact
+- New "Bookmarked Artifacts" view accessible from the sidebar, with a live count badge and a "Clear all" action
+- Star toggle added to every artifact card (works in category view, search results, and bookmarks view)
+- Typing a search query automatically exits the Bookmarks view
+
+**Artifact card UI**
+- New MITRE ATT&CK pill row — click any technique ID to open the official ATT&CK page in a new tab
+- New "Quick Commands" block — each command has its own copy button
+- New "Related Artifacts" and "Commonly Documented In" pill rows
+- New "Typical Retention / Volatility" note, shown in italic for visual distinction
+- `formatArtifact()` (used by the copy button) now includes all enriched fields when present
+
+---
+
+## v1.2 — Scalability, Theming, Copy, Ads, SEO
 
 **Content architecture**
 - Split the single monolithic `database.js` into per-platform files: `src/artifacts/windows.js`, `linux.js`, `macos.js`, `android.js`

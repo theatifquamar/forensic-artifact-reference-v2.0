@@ -10,6 +10,11 @@ export function formatArtifact(a) {
     ...a.locations.map((l) => `  - ${l}`),
     `Tools: ${a.tools.join(", ")}`,
     a.eventIds && a.eventIds.length ? `Event IDs: ${a.eventIds.join(", ")}` : null,
+    a.mitre && a.mitre.length ? `MITRE ATT&CK: ${a.mitre.join(", ")}` : null,
+    a.commands && a.commands.length ? `Commands:\n${a.commands.map((c) => `  - ${c.label}: ${c.cmd}`).join("\n")}` : null,
+    a.related && a.related.length ? `Related: ${a.related.join(", ")}` : null,
+    a.retention ? `Retention/Volatility: ${a.retention}` : null,
+    a.sources && a.sources.length ? `Sources: ${a.sources.join(", ")}` : null,
   ].filter(Boolean);
   return lines.join("\n");
 }

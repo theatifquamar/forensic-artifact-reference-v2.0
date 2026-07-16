@@ -41,7 +41,10 @@ export function searchArtifacts(query, db = DB) {
           a.reveals.toLowerCase().includes(q) ||
           a.tools.some((t) => t.toLowerCase().includes(q)) ||
           a.locations.some((l) => l.toLowerCase().includes(q)) ||
-          (a.eventIds && a.eventIds.some((e) => e.includes(q)));
+          (a.eventIds && a.eventIds.some((e) => e.includes(q))) ||
+          (a.mitre && a.mitre.some((m) => m.toLowerCase().includes(q))) ||
+          (a.related && a.related.some((r) => r.toLowerCase().includes(q))) ||
+          (a.sources && a.sources.some((s) => s.toLowerCase().includes(q)));
         if (hit) out.push({ ...a, _os: os, _cat: cat });
       }
     }

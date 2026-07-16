@@ -4,6 +4,7 @@ import Logo from "./Logo.jsx";
 import PolicyPage from "./PolicyPage.jsx";
 import CopyButton, { formatArtifact } from "./CopyButton.jsx";
 import { ThemeProvider, useTheme, OS_TINTS } from "./ThemeContext.jsx";
+import { useBookmarks } from "./useBookmarks.js";
 
 const CAT_SYMBOL = {
   "Authentication": "key", "File Activity": "folder", "Browsing Activity": "globe",
@@ -64,6 +65,14 @@ function Sym({ name, size = 15, color = "currentColor" }) {
     case "menu": return <svg style={s} viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" {...common}/></svg>;
     case "sun": return <svg style={s} viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" {...common}/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7" {...common}/></svg>;
     case "moon": return <svg style={s} viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" {...common}/></svg>;
+    case "star": return <svg style={s} viewBox="0 0 24 24" fill={color === "none" ? "none" : "currentColor"} stroke={color} strokeWidth="1.4"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.8L12 3.5Z" strokeLinejoin="round"/></svg>;
+    case "star-outline": return <svg style={s} viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.8L12 3.5Z" {...common} strokeLinejoin="round"/></svg>;
+    case "terminal": return <svg style={s} viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" {...common}/><path d="m7 9 3 3-3 3M13 15h4" {...common}/></svg>;
+    case "link": return <svg style={s} viewBox="0 0 24 24"><path d="M9 15 15 9M10 6l1.2-1.2a4 4 0 0 1 5.6 5.6L15.5 11.6M14 18l-1.2 1.2a4 4 0 0 1-5.6-5.6L8.5 12.4" {...common}/></svg>;
+    case "book": return <svg style={s} viewBox="0 0 24 24"><path d="M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z" {...common}/><path d="M5 4a3 3 0 0 0-1 2.2V17a3 3 0 0 0 3 3" {...common}/></svg>;
+    case "clock": return <svg style={s} viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" {...common}/><path d="M12 7v5l3.5 2" {...common}/></svg>;
+    case "target": return <svg style={s} viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" {...common}/><circle cx="12" cy="12" r="4" {...common}/><circle cx="12" cy="12" r=".6" fill={color} stroke="none"/></svg>;
+    case "bookmark-list": return <svg style={s} viewBox="0 0 24 24"><path d="M6 3h9a2 2 0 0 1 2 2v16l-6.5-4L4 21V5a2 2 0 0 1 2-2Z" {...common}/></svg>;
     default: return <svg style={s} viewBox="0 0 24 24"><circle cx="12" cy="12" r="2" fill={color} stroke="none"/></svg>;
   }
 }
@@ -98,7 +107,9 @@ function AppInner() {
   const [time, setTime] = useState(new Date());
   const [navOpen, setNavOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [viewingBookmarks, setViewingBookmarks] = useState(false);
   const searchRef = useRef(null);
+  const { bookmarks, isBookmarked, toggleBookmark, clearAll } = useBookmarks();
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 30000);
@@ -122,13 +133,17 @@ function AppInner() {
   const totalArtifacts = useMemo(() => countArtifacts(), []);
   const searchResults = useMemo(() => searchArtifacts(search), [search]);
 
-  const handleOS = (os) => { setSelectedOS(os); setSelectedCat(Object.keys(DB[os])[0]); setExpanded(null); setNavOpen(false); };
-  const handleCat = (cat) => { setSelectedCat(cat); setExpanded(null); setNavOpen(false); };
+  const handleOS = (os) => { setSelectedOS(os); setSelectedCat(Object.keys(DB[os])[0]); setExpanded(null); setNavOpen(false); setViewingBookmarks(false); setSearch(""); };
+  const handleCat = (cat) => { setSelectedCat(cat); setExpanded(null); setNavOpen(false); setViewingBookmarks(false); };
   const isSearching = search.trim().length > 0;
 
   useEffect(() => {
     if (selectedOS && !selectedCat) setSelectedCat(Object.keys(DB[selectedOS])[0]);
   }, [selectedOS]);
+
+  useEffect(() => {
+    if (search.trim().length > 0 && viewingBookmarks) setViewingBookmarks(false);
+  }, [search]);
 
   const dateStr = time.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
   const timeStr = time.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
@@ -170,12 +185,35 @@ function AppInner() {
                 onPolicy={() => { setRoute("policy"); setNavOpen(false); }}
                 ST={ST}
                 theme={theme}
+                bookmarkCount={bookmarks.length}
+                viewingBookmarks={viewingBookmarks}
+                onBookmarks={() => { setViewingBookmarks(true); setSearch(""); setNavOpen(false); }}
               />
             </div>
 
             <div style={ST.content} className="fr-content">
-              {isSearching ? (
-                <SearchView results={searchResults} expanded={expanded} setExpanded={setExpanded} query={search} ST={ST} theme={theme} />
+              {viewingBookmarks ? (
+                <BookmarksView
+                  bookmarks={bookmarks}
+                  expanded={expanded}
+                  setExpanded={setExpanded}
+                  ST={ST}
+                  theme={theme}
+                  isBookmarked={isBookmarked}
+                  toggleBookmark={toggleBookmark}
+                  clearAll={clearAll}
+                />
+              ) : isSearching ? (
+                <SearchView
+                  results={searchResults}
+                  expanded={expanded}
+                  setExpanded={setExpanded}
+                  query={search}
+                  ST={ST}
+                  theme={theme}
+                  isBookmarked={isBookmarked}
+                  toggleBookmark={toggleBookmark}
+                />
               ) : (
                 <CategoryView
                   os={selectedOS}
@@ -185,12 +223,14 @@ function AppInner() {
                   setExpanded={setExpanded}
                   ST={ST}
                   theme={theme}
+                  isBookmarked={isBookmarked}
+                  toggleBookmark={toggleBookmark}
                 />
               )}
             </div>
           </div>
 
-          <StatusBar total={totalArtifacts} selectedOS={selectedOS} selectedCat={selectedCat} isSearching={isSearching} resultCount={searchResults.length} ST={ST} />
+          <StatusBar total={totalArtifacts} selectedOS={selectedOS} selectedCat={selectedCat} isSearching={isSearching} resultCount={searchResults.length} ST={ST} viewingBookmarks={viewingBookmarks} bookmarkCount={bookmarks.length} />
         </div>
       </div>
     </div>
@@ -353,13 +393,13 @@ function TitleBar({ total, search, setSearch, searchRef, navOpen, setNavOpen, mo
   );
 }
 
-function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, ST, theme }) {
+function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, ST, theme, bookmarkCount, viewingBookmarks, onBookmarks }) {
   const categories = selectedOS ? Object.keys(DB[selectedOS]) : [];
   return (
     <div style={ST.sidebar}>
       <div style={ST.sideGroupLabel}>Platforms</div>
       {Object.keys(DB).map(os => {
-        const active = selectedOS === os && !isSearching;
+        const active = selectedOS === os && !isSearching && !viewingBookmarks;
         const count = Object.values(DB[os]).reduce((s, a) => s + a.length, 0);
         return (
           <button key={os} onClick={() => onOS(os)}
@@ -378,7 +418,7 @@ function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, 
       </div>
       <div style={ST.sideScroll}>
         {categories.map(cat => {
-          const active = selectedCat === cat && !isSearching;
+          const active = selectedCat === cat && !isSearching && !viewingBookmarks;
           return (
             <button key={cat} onClick={() => onCat(cat)}
               style={{ ...ST.sideSubItem, ...(active ? ST.sideSubItemActive : {}) }}>
@@ -390,11 +430,14 @@ function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, 
             </button>
           );
         })}
-
-      
       </div>
 
       <div style={ST.sideFooter}>
+        <button style={{ ...ST.sideFooterBtn, ...(viewingBookmarks ? { color: "#FF9F0A", fontWeight: 700 } : {}) }} onClick={onBookmarks}>
+          <Sym name={viewingBookmarks ? "star" : "star-outline"} size={13} color={viewingBookmarks ? "#FF9F0A" : theme.textTertiary} />
+          <span style={{ flex: 1 }}>Bookmarked Artifacts</span>
+          {bookmarkCount > 0 && <span style={ST.bookmarkBadge}>{bookmarkCount}</span>}
+        </button>
         <button style={ST.sideFooterBtn} onClick={onPolicy}>
           <Sym name="doc" size={13} color={theme.textTertiary} />
           <span>About &amp; Policy</span>
@@ -420,16 +463,16 @@ function CategoryView({ os, cat, artifacts, expanded, setExpanded, ST, theme }) 
       </div>
       <div style={ST.cardList}>
         {artifacts.map((a, i) => (
-          <ArtifactCard key={i} artifact={a} tint={tint} ST={ST}
-            expanded={expanded === i} onToggle={() => setExpanded(expanded === i ? null : i)} />
+          <ArtifactCard key={i} artifact={a} tint={tint} ST={ST} os={os} cat={cat}
+            expanded={expanded === i} onToggle={() => setExpanded(expanded === i ? null : i)}
+            isBookmarked={isBookmarked} toggleBookmark={toggleBookmark} />
         ))}
       </div>
-
     </div>
   );
 }
 
-function SearchView({ results, expanded, setExpanded, query, ST, theme }) {
+function SearchView({ results, expanded, setExpanded, query, ST, theme, isBookmarked, toggleBookmark }) {
   return (
     <div style={ST.viewInner} className="fr-view-inner">
       <div style={ST.viewHeader}>
@@ -442,13 +485,14 @@ function SearchView({ results, expanded, setExpanded, query, ST, theme }) {
         </div>
       </div>
       {results.length === 0 ? (
-        <Empty text="No artifacts found. Try a tool name, file path, or event ID." ST={ST} />
+        <Empty text="No artifacts found. Try a tool name, file path, event ID, or MITRE ATT&CK technique." ST={ST} />
       ) : (
         <div style={ST.cardList}>
           {results.map((a, i) => (
-            <ArtifactCard key={i} artifact={a} tint={OS_TINTS[a._os]} ST={ST}
+            <ArtifactCard key={i} artifact={a} tint={OS_TINTS[a._os]} ST={ST} os={a._os} cat={a._cat}
               badge={`${a._os} · ${a._cat}`}
-              expanded={expanded === `s${i}`} onToggle={() => setExpanded(expanded === `s${i}` ? null : `s${i}`)} />
+              expanded={expanded === `s${i}`} onToggle={() => setExpanded(expanded === `s${i}` ? null : `s${i}`)}
+              isBookmarked={isBookmarked} toggleBookmark={toggleBookmark} />
           ))}
         </div>
       )}
@@ -456,7 +500,56 @@ function SearchView({ results, expanded, setExpanded, query, ST, theme }) {
   );
 }
 
-function ArtifactCard({ artifact, tint, badge, expanded, onToggle, ST }) {
+function BookmarksView({ bookmarks, expanded, setExpanded, ST, theme, isBookmarked, toggleBookmark, clearAll }) {
+  return (
+    <div style={ST.viewInner} className="fr-view-inner">
+      <div style={ST.viewHeader}>
+        <span style={{ ...ST.viewIconWrap, background: "#FF9F0A1E" }}>
+          <Sym name="star" size={17} color="#FF9F0A" />
+        </span>
+        <div style={{ flex: 1 }}>
+          <div style={ST.viewTitle}>Bookmarked Artifacts</div>
+          <div style={ST.viewSub}>{bookmarks.length} saved for this case</div>
+        </div>
+        {bookmarks.length > 0 && (
+          <button
+            onClick={() => { if (confirm("Clear all bookmarks? This can't be undone.")) clearAll(); }}
+            style={{ background: "none", border: "none", color: theme.textTertiary, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
+          >
+            Clear all
+          </button>
+        )}
+      </div>
+      {bookmarks.length === 0 ? (
+        <Empty text={"No bookmarks yet.\nTap the star on any artifact card to save it here for quick reference during a case."} ST={ST} />
+      ) : (
+        <div style={ST.cardList}>
+          {bookmarks
+            .slice()
+            .sort((a, b) => b.addedAt - a.addedAt)
+            .map((b, i) => (
+              <ArtifactCard
+                key={b.key}
+                artifact={b.artifact}
+                tint={OS_TINTS[b.artifact._os] || "#0A84FF"}
+                ST={ST}
+                os={b.artifact._os}
+                cat={b.artifact._cat}
+                badge={`${b.artifact._os} · ${b.artifact._cat}`}
+                expanded={expanded === `b${i}`}
+                onToggle={() => setExpanded(expanded === `b${i}` ? null : `b${i}`)}
+                isBookmarked={isBookmarked}
+                toggleBookmark={toggleBookmark}
+              />
+            ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ArtifactCard({ artifact, tint, badge, expanded, onToggle, ST, os, cat, isBookmarked, toggleBookmark }) {
+  const bookmarked = isBookmarked ? isBookmarked(artifact) : false;
   return (
     <div style={{ ...ST.card, ...(expanded ? { boxShadow: `0 0 0 1px ${tint}55, 0 8px 24px rgba(0,0,0,0.35)` } : {}) }}>
       <button style={ST.cardHead} onClick={onToggle}>
@@ -466,6 +559,16 @@ function ArtifactCard({ artifact, tint, badge, expanded, onToggle, ST }) {
           {!expanded && <span style={ST.cardPreview}>{artifact.reveals.slice(0, 100)}{artifact.reveals.length > 100 ? "…" : ""}</span>}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+          {toggleBookmark && (
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleBookmark(artifact, os, cat); }}
+              aria-label={bookmarked ? "Remove bookmark" : "Bookmark this artifact"}
+              title={bookmarked ? "Remove bookmark" : "Bookmark this artifact"}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: "3px 4px", display: "flex", color: bookmarked ? "#FF9F0A" : ST._textTertiary }}
+            >
+              <Sym name={bookmarked ? "star" : "star-outline"} size={14} />
+            </button>
+          )}
           <CopyButton
             getText={() => formatArtifact(artifact)}
             style={{ color: ST._textTertiary }}
@@ -495,16 +598,63 @@ function ArtifactCard({ artifact, tint, badge, expanded, onToggle, ST }) {
               </div>
             </FieldBlock>
           )}
+          {artifact.mitre?.length > 0 && (
+            <FieldBlock label="MITRE ATT&CK Techniques" icon="target" ST={ST}>
+              <div style={ST.pillRow}>
+                {artifact.mitre.map((m, i) => (
+                  <a key={i} href={`https://attack.mitre.org/techniques/${m.replace(".", "/")}/`} target="_blank" rel="noopener noreferrer"
+                    style={{ ...ST.pillTint, background: tint + "26", color: tint, boxShadow: `inset 0 0 0 1px ${tint}55`, textDecoration: "none", cursor: "pointer" }}>
+                    {m} ↗
+                  </a>
+                ))}
+              </div>
+            </FieldBlock>
+          )}
+          {artifact.commands?.length > 0 && (
+            <FieldBlock label="Quick Commands" icon="terminal" ST={ST}>
+              {artifact.commands.map((c, i) => (
+                <div key={i} style={ST.commandRow}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={ST.commandLabel}>{c.label}</div>
+                    <code style={ST.commandCode}>{c.cmd}</code>
+                  </div>
+                  <CopyButton getText={c.cmd} style={{ color: ST._textTertiary, flexShrink: 0 }} />
+                </div>
+              ))}
+            </FieldBlock>
+          )}
+          {artifact.related?.length > 0 && (
+            <FieldBlock label="Related Artifacts" icon="link" ST={ST}>
+              <div style={ST.pillRow}>
+                {artifact.related.map((r, i) => <span key={i} style={ST.pillMuted}>{r}</span>)}
+              </div>
+            </FieldBlock>
+          )}
+          {artifact.retention && (
+            <FieldBlock label="Typical Retention / Volatility" icon="clock" ST={ST}>
+              <p style={ST.fieldTextSmall}>{artifact.retention}</p>
+            </FieldBlock>
+          )}
+          {artifact.sources?.length > 0 && (
+            <FieldBlock label="Commonly Documented In" icon="book" ST={ST}>
+              <div style={ST.pillRow}>
+                {artifact.sources.map((s, i) => <span key={i} style={ST.pillMuted}>{s}</span>)}
+              </div>
+            </FieldBlock>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function FieldBlock({ label, children, ST }) {
+function FieldBlock({ label, children, ST, icon }) {
   return (
     <div style={ST.field}>
-      <div style={ST.fieldLabel}>{label}</div>
+      <div style={ST.fieldLabel}>
+        {icon && <Sym name={icon} size={10} color={ST._textTertiary} />}
+        {label}
+      </div>
       {children}
     </div>
   );
@@ -514,15 +664,21 @@ function Empty({ text, ST }) {
   return (
     <div style={ST.emptyWrap}>
       <Logo size={40} muted />
-      <p style={ST.emptyText}>{text}</p>
+      <p style={{ ...ST.emptyText, whiteSpace: "pre-line" }}>{text}</p>
     </div>
   );
 }
 
-function StatusBar({ total, selectedOS, selectedCat, isSearching, resultCount, ST }) {
+function StatusBar({ total, selectedOS, selectedCat, isSearching, resultCount, ST, viewingBookmarks, bookmarkCount }) {
   return (
     <div style={ST.statusBar}>
-      <span>{isSearching ? `${resultCount} results` : `${selectedOS || ""} ${selectedCat ? "› " + selectedCat : ""}`}</span>
+      <span>
+        {viewingBookmarks
+          ? `${bookmarkCount} bookmarked`
+          : isSearching
+          ? `${resultCount} results`
+          : `${selectedOS || ""} ${selectedCat ? "› " + selectedCat : ""}`}
+      </span>
       <span style={{ marginLeft: "auto" }}>{total} artifacts indexed · AI-generated reference, verify before operational use</span>
     </div>
   );
@@ -626,6 +782,11 @@ function buildStyles(theme) {
       display: "flex", alignItems: "center", gap: 8, width: "100%",
       background: "none", border: "none", borderRadius: 6, padding: "6px 8px",
       cursor: "pointer", color: t.textTertiary, fontSize: 12, fontFamily: "inherit", textAlign: "left",
+      marginBottom: 2,
+    },
+    bookmarkBadge: {
+      fontSize: 10, fontWeight: 700, background: "#FF9F0A22", color: "#FF9F0A",
+      borderRadius: 20, padding: "1px 7px", flexShrink: 0,
     },
 
     content: { flex: 1, overflowY: "auto", background: t.contentBg },
@@ -650,8 +811,9 @@ function buildStyles(theme) {
 
     cardBody: { padding: "4px 14px 16px", display: "flex", flexDirection: "column", gap: 13, borderTop: `1px solid ${t.borderColorSoft}` },
     field: { display: "flex", flexDirection: "column", gap: 6, marginTop: 10 },
-    fieldLabel: { fontSize: 10, fontWeight: 700, color: t.textQuaternary, textTransform: "uppercase", letterSpacing: "0.07em" },
+    fieldLabel: { fontSize: 10, fontWeight: 700, color: t.textQuaternary, textTransform: "uppercase", letterSpacing: "0.07em", display: "flex", alignItems: "center", gap: 5 },
     fieldText: { fontSize: 13, lineHeight: 1.65, color: t.textSecondary, margin: 0 },
+    fieldTextSmall: { fontSize: 12, lineHeight: 1.6, color: t.textTertiary, margin: 0, fontStyle: "italic" },
     code: {
       display: "block", background: t.codeBg, color: t.codeText,
       borderRadius: 5, padding: "5px 9px", fontSize: 11.5, marginBottom: 4,
@@ -659,7 +821,18 @@ function buildStyles(theme) {
     },
     pillRow: { display: "flex", flexWrap: "wrap", gap: 5 },
     pill: { background: t.pillBg, color: t.pillText, borderRadius: 20, padding: "3px 10px", fontSize: 11.5 },
-    pillTint: { borderRadius: 20, padding: "3px 10px", fontSize: 11.5, fontWeight: 700 },
+    pillTint: { borderRadius: 20, padding: "3px 10px", fontSize: 11.5, fontWeight: 700, display: "inline-block" },
+    pillMuted: { background: "none", color: t.textTertiary, borderRadius: 20, padding: "3px 10px", fontSize: 11.5, boxShadow: `inset 0 0 0 1px ${t.borderColor}` },
+
+    commandRow: {
+      display: "flex", alignItems: "flex-start", gap: 8,
+      background: t.codeBg, borderRadius: 6, padding: "8px 10px",
+    },
+    commandLabel: { fontSize: 10.5, color: t.textTertiary, marginBottom: 3 },
+    commandCode: {
+      display: "block", color: t.codeText, fontSize: 11.5, wordBreak: "break-all",
+      fontFamily: "'SF Mono', Menlo, Consolas, monospace", background: "none", padding: 0,
+    },
 
     emptyWrap: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "100px 20px", gap: 16, opacity: 0.7 },
     emptyText: { fontSize: 13, color: t.textTertiary },
