@@ -149,24 +149,20 @@ export default function PolicyPage({ onBack, time }) {
 
             <Section title="Trademarks & Third-Party Names" flag P={P}>
               <p>
-                This reference mentions the names of third-party tools, software, training courses, and organizations
-                — for example (without limitation) forensic tools such as <em>EvtxECmd, Registry Explorer, Autopsy,
-                Cellebrite, Magnet AXIOM, Volatility, Mimikatz, Sysmon,</em> and similar; and training/certification
-                references such as <em>SANS FOR500, FOR508, FOR518, FOR585,</em> and similar course codes.
+                This reference mentions the names of third-party forensic tools and software used by investigators
+                to analyze the artifacts described — for identification purposes only, so you know which tool is
+                commonly used to parse or examine a given artifact.
               </p>
               <p>
-                All such names, trademarks, service marks, and course codes are the property of their respective
-                owners. <strong>They are used here strictly for identification and reference purposes only</strong> —
-                to tell you which real-world tool or course commonly documents a given artifact — and their mention
-                does not imply any sponsorship, endorsement, affiliation, certification, or partnership between this
-                site and the trademark owner, nor between this site and SANS Institute, Eric Zimmermann, Cellebrite,
-                Magnet Forensics, Microsoft, or any other named organization or tool author.
+                All such product names, trademarks, and service marks are the property of their respective owners.
+                <strong> Their mention here does not imply any sponsorship, endorsement, affiliation, or partnership</strong> between
+                this site and the tool's maker. We do not claim any ownership or rights over these names, and we make
+                no representation as to a tool's current features, licensing terms, availability, or pricing — always
+                refer to the tool's own official website or documentation for current, authoritative information.
               </p>
               <p>
-                We do not claim any ownership or rights over these names, and we make no representation as to the
-                accuracy of a tool's current features, licensing terms, or pricing — always refer to the tool or
-                course provider's own official website for current, authoritative information. If a trademark owner
-                has concerns about how their mark is referenced here, corrections are welcome (see below).
+                If a trademark owner has concerns about how their product name is referenced here, corrections are
+                welcome (see below).
               </p>
             </Section>
 

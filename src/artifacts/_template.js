@@ -36,7 +36,7 @@ export const PlatformTemplate = {
 
       retention: "Persists until manually cleared or registry hive is rebuilt — no automatic rotation.", // how long this artifact typically survives before being overwritten/rotated
 
-      sources: ["SANS FOR500", "Microsoft Learn — Windows Registry"], // where this is commonly documented, for credibility/further reading
+      sources: ["Microsoft Learn — Windows Registry", "Eric Zimmermann's tools documentation"], // where this is commonly documented (prefer official vendor docs, open-source project docs, MITRE ATT&CK — avoid paid/commercial course references), for credibility/further reading
     },
     // add more artifact objects here, comma-separated
   ],

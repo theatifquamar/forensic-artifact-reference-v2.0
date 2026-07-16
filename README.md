@@ -51,7 +51,7 @@ src/artifacts/
   commands: [{ label: "...", cmd: "..." }], // copy-pasteable extraction commands
   related: ["Other Artifact Name"],         // cross-referenced artifacts
   retention: "How long this typically persists before being overwritten.",
-  sources: ["SANS FOR500", "..."],          // where this is commonly documented
+  sources: ["Microsoft Learn — ...", "MITRE ATT&CK ..."],  // where this is commonly documented (prefer official vendor docs, open-source project docs, MITRE ATT&CK)
 }
 ```
 
@@ -109,6 +109,7 @@ public/
 
 - React 18 + Vite
 - No external UI libraries — hand-built, macOS-inspired interface
+- No external ad network integrated yet (see `AdWidget.jsx`)
 
 ## Copyright
 

@@ -10,7 +10,24 @@ All notable changes to the Forensic Artifact Reference project, by version.
 
 ---
 
-## v1.4 — Full 378-Artifact Enrichment, Star Color Fix (current)
+## v1.5 — Removed Commercial Course References, Wider Desktop Window (current)
+
+**Content changes — safer trademark posture**
+- Removed all "SANS FOR500/508/518/526/585" course-code citations from every artifact's `sources` field (was present on all 378 artifacts) — these referenced a specific paid commercial training provider, which was more legal exposure than a source citation needed to carry
+- Removed two "Mandiant [topic] research" source citations (Shimcache, timestomping) and replaced with vendor-neutral citations (Eric Zimmermann's tools documentation, MITRE ATT&CK)
+- Artifacts that had only a SANS citation now simply have an empty `sources` array — the UI already hides the "Commonly Documented In" block when empty, so no broken or empty-looking fields
+- Updated `src/artifacts/_template.js` and `README.md` documentation examples to no longer suggest SANS as an example source
+
+**Policy page — simplified trademark section**
+- Rewrote "Trademarks & Third-Party Names" to focus only on the legitimate mention of forensic tool names (e.g., a tool used to parse a given artifact) rather than naming specific companies, training providers, or course codes
+- Removed explicit callouts of SANS Institute, Cellebrite, Magnet Forensics, and Microsoft by name from the disclaimer text itself — kept the disclaimer generic and evergreen so it doesn't need updating as tool references change
+
+**Desktop layout**
+- Widened the desktop window from `maxWidth: 1180 / maxHeight: 820` to `maxWidth: 1680 / maxHeight: 1100`, and reduced the surrounding padding — the app now fills most of a typical desktop viewport instead of floating with large empty margins on all sides. Mobile drawer/full-viewport behavior is unaffected.
+
+---
+
+## v1.4 — Full 378-Artifact Enrichment, Star Color Fix
 
 **Bug fixes**
 - Fixed `ReferenceError: isBookmarked is not defined` crash that made the entire app render blank — `CategoryView`'s function signature was missing `isBookmarked`/`toggleBookmark` in its destructured props despite the parent component correctly passing them in
