@@ -10,7 +10,39 @@ All notable changes to the Forensic Artifact Reference project, by version.
 
 ---
 
-## v1.5 — Removed Commercial Course References, Wider Desktop Window (current)
+## v1.6 — PDF Export, Triage Checklists, Recently Viewed, Keyboard Nav, Suggest an Edit (current)
+
+**PDF / print export**
+- New `src/PrintExport.jsx` — a hidden, print-only document view revealed via `@media print`, so clicking "Export PDF" (browser's native print-to-PDF) produces a clean report instead of a screenshot of the app chrome
+- "Export PDF" button available on Category, Search, Bookmarks, and Triage Checklist views
+
+**Triage Checklist Builder**
+- New `src/TriageBuilder.jsx` + `src/triageChecklists.js` — pick an incident type (Ransomware, Insider Threat/Data Exfiltration, Unauthorized Remote Access/Lateral Movement, Malware Execution/Endpoint Compromise, Mobile Device Investigation) and a platform, get a prioritized, checkable artifact pull order
+- Checklists reference real artifact names resolved live against the actual database — verified zero mismatches against all 378 artifacts
+- New sidebar entry "Triage Checklist"
+
+**Recently Viewed**
+- New `src/useRecentlyViewed.js` — tracks the last 12 artifacts expanded this session, localStorage-backed
+- New sidebar entry "Recently Viewed" with a live count badge
+- Wired into every view (Category, Search, Bookmarks, Triage) so any artifact expansion anywhere gets recorded
+
+**Keyboard navigation**
+- ↑/↓ arrow keys move the expanded artifact up/down through whichever list is currently on screen
+- Enter/collapsing behavior unified across all views via a single index-based `expanded` state scheme
+- Esc collapses the currently expanded card
+- ⌘K / Ctrl+K still jumps to search (merged into the same handler, no behavior change)
+- Small on-screen hint added to the desktop status bar (hidden on mobile, since there's no keyboard there)
+
+**Suggest an edit**
+- Every artifact card now has a small "Suggest an edit to this artifact" link at the bottom of its expanded view
+- Opens a pre-filled GitHub issue (title + body auto-populated with the artifact name, platform, and category) via a new `GITHUB_REPO_URL` constant at the top of `src/App.jsx` — **update this to your actual repo URL before deploying**
+
+**Housekeeping**
+- Removed a stale README reference to the already-deleted `AdWidget.jsx`
+
+---
+
+## v1.5 — Removed Commercial Course References, Wider Desktop Window
 
 **Content changes — safer trademark posture**
 - Removed all "SANS FOR500/508/518/526/585" course-code citations from every artifact's `sources` field (was present on all 378 artifacts) — these referenced a specific paid commercial training provider, which was more legal exposure than a source citation needed to carry

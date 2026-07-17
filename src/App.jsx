@@ -5,6 +5,12 @@ import PolicyPage from "./PolicyPage.jsx";
 import CopyButton, { formatArtifact } from "./CopyButton.jsx";
 import { ThemeProvider, useTheme, OS_TINTS } from "./ThemeContext.jsx";
 import { useBookmarks } from "./useBookmarks.js";
+import { useRecentlyViewed } from "./useRecentlyViewed.js";
+import PrintExport from "./PrintExport.jsx";
+import TriageBuilder from "./TriageBuilder.jsx";
+
+// EDIT THIS to point at your actual GitHub repo — used by the "Suggest an edit" link on every artifact card.
+const GITHUB_REPO_URL = "https://github.com/atifquamar/forensic-artifact-reference";
 
 const CAT_SYMBOL = {
   "Authentication": "key", "File Activity": "folder", "Browsing Activity": "globe",
@@ -65,12 +71,16 @@ function Sym({ name, size = 15, color = "currentColor" }) {
     case "menu": return <svg style={s} viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" {...common}/></svg>;
     case "sun": return <svg style={s} viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" {...common}/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7" {...common}/></svg>;
     case "moon": return <svg style={s} viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" {...common}/></svg>;
+    case "print": return <svg style={s} viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 14h12v7H6v-7Z" {...common}/></svg>;
+    case "checklist": return <svg style={s} viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11" {...common}/><path d="m3.5 6 1 1 2-2M3.5 12l1 1 2-2M3.5 18l1 1 2-2" {...common}/></svg>;
+    case "check": return <svg style={s} viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" {...common}/></svg>;
     case "star": return <svg style={s} viewBox="0 0 24 24" fill={color === "none" ? "none" : "currentColor"} stroke={color} strokeWidth="1.4"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.8L12 3.5Z" strokeLinejoin="round"/></svg>;
     case "star-outline": return <svg style={s} viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.8L12 3.5Z" {...common} strokeLinejoin="round"/></svg>;
     case "terminal": return <svg style={s} viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" {...common}/><path d="m7 9 3 3-3 3M13 15h4" {...common}/></svg>;
     case "link": return <svg style={s} viewBox="0 0 24 24"><path d="M9 15 15 9M10 6l1.2-1.2a4 4 0 0 1 5.6 5.6L15.5 11.6M14 18l-1.2 1.2a4 4 0 0 1-5.6-5.6L8.5 12.4" {...common}/></svg>;
     case "book": return <svg style={s} viewBox="0 0 24 24"><path d="M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z" {...common}/><path d="M5 4a3 3 0 0 0-1 2.2V17a3 3 0 0 0 3 3" {...common}/></svg>;
     case "clock": return <svg style={s} viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" {...common}/><path d="M12 7v5l3.5 2" {...common}/></svg>;
+    case "flag": return <svg style={s} viewBox="0 0 24 24"><path d="M5 3v18M5 4h11l-2.5 3.5L16 11H5" {...common}/></svg>;
     case "target": return <svg style={s} viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" {...common}/><circle cx="12" cy="12" r="4" {...common}/><circle cx="12" cy="12" r=".6" fill={color} stroke="none"/></svg>;
     case "bookmark-list": return <svg style={s} viewBox="0 0 24 24"><path d="M6 3h9a2 2 0 0 1 2 2v16l-6.5-4L4 21V5a2 2 0 0 1 2-2Z" {...common}/></svg>;
     default: return <svg style={s} viewBox="0 0 24 24"><circle cx="12" cy="12" r="2" fill={color} stroke="none"/></svg>;
@@ -108,23 +118,15 @@ function AppInner() {
   const [navOpen, setNavOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [viewingBookmarks, setViewingBookmarks] = useState(false);
+  const [viewingTriage, setViewingTriage] = useState(false);
+  const [viewingRecent, setViewingRecent] = useState(false);
   const searchRef = useRef(null);
   const { bookmarks, isBookmarked, toggleBookmark, clearAll } = useBookmarks();
+  const { recent, recordView, clearAll: clearRecent } = useRecentlyViewed();
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 30000);
     return () => clearInterval(t);
-  }, []);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        searchRef.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
   }, []);
 
   const categories = selectedOS ? Object.keys(DB[selectedOS]) : [];
@@ -133,9 +135,51 @@ function AppInner() {
   const totalArtifacts = useMemo(() => countArtifacts(), []);
   const searchResults = useMemo(() => searchArtifacts(search), [search]);
 
-  const handleOS = (os) => { setSelectedOS(os); setSelectedCat(Object.keys(DB[os])[0]); setExpanded(null); setNavOpen(false); setViewingBookmarks(false); setSearch(""); };
-  const handleCat = (cat) => { setSelectedCat(cat); setExpanded(null); setNavOpen(false); setViewingBookmarks(false); };
   const isSearching = search.trim().length > 0;
+
+  // The list currently on screen, plus the prefix its `expanded` keys use — needed so
+  // arrow-key navigation and Enter-to-expand work the same way regardless of which view
+  // (category, search, bookmarks, recent) is active. TriageBuilder manages its own
+  // internal expand state and is intentionally excluded from this global handler.
+  const activeList = viewingRecent ? recent.map(r => r.artifact)
+    : viewingBookmarks ? bookmarks.map(b => b.artifact)
+    : isSearching ? searchResults
+    : artifacts;
+  const activePrefix = viewingRecent ? "r" : viewingBookmarks ? "b" : isSearching ? "s" : "";
+
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        searchRef.current?.focus();
+        return;
+      }
+
+      const tag = document.activeElement?.tagName;
+      const isTyping = tag === "INPUT" || tag === "TEXTAREA";
+      if (viewingTriage || activeList.length === 0) return;
+
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        if (isTyping && document.activeElement !== searchRef.current) return;
+        e.preventDefault();
+        const currentIdx = expanded !== null && String(expanded).startsWith(activePrefix)
+          ? parseInt(String(expanded).replace(activePrefix, ""), 10)
+          : -1;
+        const delta = e.key === "ArrowDown" ? 1 : -1;
+        let nextIdx = currentIdx === -1 ? (delta === 1 ? 0 : activeList.length - 1) : currentIdx + delta;
+        nextIdx = Math.max(0, Math.min(activeList.length - 1, nextIdx));
+        setExpanded(activePrefix ? `${activePrefix}${nextIdx}` : nextIdx);
+        if (document.activeElement === searchRef.current) searchRef.current.blur();
+      } else if (e.key === "Escape" && expanded !== null) {
+        setExpanded(null);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [expanded, activeList, activePrefix, viewingTriage]);
+
+  const handleOS = (os) => { setSelectedOS(os); setSelectedCat(Object.keys(DB[os])[0]); setExpanded(null); setNavOpen(false); setViewingBookmarks(false); setViewingTriage(false); setViewingRecent(false); setSearch(""); };
+  const handleCat = (cat) => { setSelectedCat(cat); setExpanded(null); setNavOpen(false); setViewingBookmarks(false); setViewingTriage(false); setViewingRecent(false); };
 
   useEffect(() => {
     if (selectedOS && !selectedCat) setSelectedCat(Object.keys(DB[selectedOS])[0]);
@@ -143,6 +187,8 @@ function AppInner() {
 
   useEffect(() => {
     if (search.trim().length > 0 && viewingBookmarks) setViewingBookmarks(false);
+    if (search.trim().length > 0 && viewingTriage) setViewingTriage(false);
+    if (search.trim().length > 0 && viewingRecent) setViewingRecent(false);
   }, [search]);
 
   const dateStr = time.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
@@ -151,6 +197,14 @@ function AppInner() {
   if (route === "policy") {
     return <PolicyPage onBack={() => setRoute("app")} time={{ dateStr, timeStr }} />;
   }
+
+  const printData = viewingRecent
+    ? { title: "Recently Viewed", subtitle: `Last ${recent.length} artifact${recent.length !== 1 ? "s" : ""} opened this session`, artifacts: recent.map(r => r.artifact) }
+    : viewingBookmarks
+    ? { title: "Bookmarked Artifacts", subtitle: `${bookmarks.length} saved for this case`, artifacts: bookmarks.map(b => b.artifact) }
+    : isSearching
+    ? { title: "Search Results", subtitle: `${searchResults.length} match${searchResults.length !== 1 ? "es" : ""} for "${search}"`, artifacts: searchResults }
+    : { title: selectedCat || "", subtitle: selectedOS ? `${selectedOS} · ${artifacts.length} artifact${artifacts.length !== 1 ? "s" : ""}` : "", artifacts };
 
   return (
     <div style={ST.desktop}>
@@ -187,12 +241,40 @@ function AppInner() {
                 theme={theme}
                 bookmarkCount={bookmarks.length}
                 viewingBookmarks={viewingBookmarks}
-                onBookmarks={() => { setViewingBookmarks(true); setSearch(""); setNavOpen(false); }}
+                onBookmarks={() => { setViewingBookmarks(true); setViewingTriage(false); setViewingRecent(false); setSearch(""); setNavOpen(false); }}
+                viewingTriage={viewingTriage}
+                onTriage={() => { setViewingTriage(true); setViewingBookmarks(false); setViewingRecent(false); setSearch(""); setNavOpen(false); }}
+                recentCount={recent.length}
+                viewingRecent={viewingRecent}
+                onRecent={() => { setViewingRecent(true); setViewingBookmarks(false); setViewingTriage(false); setSearch(""); setNavOpen(false); }}
               />
             </div>
 
             <div style={ST.content} className="fr-content">
-              {viewingBookmarks ? (
+              {viewingTriage ? (
+                <TriageBuilder
+                  ST={ST}
+                  theme={theme}
+                  Sym={Sym}
+                  ArtifactCard={ArtifactCard}
+                  isBookmarked={isBookmarked}
+                  toggleBookmark={toggleBookmark}
+                  ExportButton={ExportButton}
+                  onRecordView={recordView}
+                />
+              ) : viewingRecent ? (
+                <RecentView
+                  recent={recent}
+                  expanded={expanded}
+                  setExpanded={setExpanded}
+                  ST={ST}
+                  theme={theme}
+                  isBookmarked={isBookmarked}
+                  toggleBookmark={toggleBookmark}
+                  onRecordView={recordView}
+                  clearAll={clearRecent}
+                />
+              ) : viewingBookmarks ? (
                 <BookmarksView
                   bookmarks={bookmarks}
                   expanded={expanded}
@@ -202,6 +284,7 @@ function AppInner() {
                   isBookmarked={isBookmarked}
                   toggleBookmark={toggleBookmark}
                   clearAll={clearAll}
+                  onRecordView={recordView}
                 />
               ) : isSearching ? (
                 <SearchView
@@ -213,6 +296,7 @@ function AppInner() {
                   theme={theme}
                   isBookmarked={isBookmarked}
                   toggleBookmark={toggleBookmark}
+                  onRecordView={recordView}
                 />
               ) : (
                 <CategoryView
@@ -225,6 +309,7 @@ function AppInner() {
                   theme={theme}
                   isBookmarked={isBookmarked}
                   toggleBookmark={toggleBookmark}
+                  onRecordView={recordView}
                 />
               )}
             </div>
@@ -233,6 +318,8 @@ function AppInner() {
           <StatusBar total={totalArtifacts} selectedOS={selectedOS} selectedCat={selectedCat} isSearching={isSearching} resultCount={searchResults.length} ST={ST} viewingBookmarks={viewingBookmarks} bookmarkCount={bookmarks.length} />
         </div>
       </div>
+
+      <PrintExport title={printData.title} subtitle={printData.subtitle} artifacts={printData.artifacts} />
     </div>
   );
 }
@@ -294,6 +381,14 @@ function ResponsiveStyles() {
       input, textarea, select, button { font-size: 16px; }
       @media (min-width: 521px) {
         input, textarea, select, button { font-size: revert; }
+      }
+
+      .fr-print-root { display: none; }
+
+      @media print {
+        html, body { background: #fff !important; }
+        #root > div:not(.fr-print-root) { display: none !important; }
+        .fr-print-root { display: block !important; }
       }
     `}</style>
   );
@@ -393,13 +488,13 @@ function TitleBar({ total, search, setSearch, searchRef, navOpen, setNavOpen, mo
   );
 }
 
-function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, ST, theme, bookmarkCount, viewingBookmarks, onBookmarks }) {
+function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, ST, theme, bookmarkCount, viewingBookmarks, onBookmarks, viewingTriage, onTriage, recentCount, viewingRecent, onRecent }) {
   const categories = selectedOS ? Object.keys(DB[selectedOS]) : [];
   return (
     <div style={ST.sidebar}>
       <div style={ST.sideGroupLabel}>Platforms</div>
       {Object.keys(DB).map(os => {
-        const active = selectedOS === os && !isSearching && !viewingBookmarks;
+        const active = selectedOS === os && !isSearching && !viewingBookmarks && !viewingTriage && !viewingRecent;
         const count = Object.values(DB[os]).reduce((s, a) => s + a.length, 0);
         return (
           <button key={os} onClick={() => onOS(os)}
@@ -418,7 +513,7 @@ function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, 
       </div>
       <div style={ST.sideScroll}>
         {categories.map(cat => {
-          const active = selectedCat === cat && !isSearching && !viewingBookmarks;
+          const active = selectedCat === cat && !isSearching && !viewingBookmarks && !viewingTriage && !viewingRecent;
           return (
             <button key={cat} onClick={() => onCat(cat)}
               style={{ ...ST.sideSubItem, ...(active ? ST.sideSubItemActive : {}) }}>
@@ -433,6 +528,15 @@ function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, 
       </div>
 
       <div style={ST.sideFooter}>
+        <button style={{ ...ST.sideFooterBtn, ...(viewingTriage ? { color: "#30D158", fontWeight: 700 } : {}) }} onClick={onTriage}>
+          <Sym name="checklist" size={13} color={viewingTriage ? "#30D158" : theme.textTertiary} />
+          <span style={{ flex: 1 }}>Triage Checklist</span>
+        </button>
+        <button style={{ ...ST.sideFooterBtn, ...(viewingRecent ? { color: "#5E5CE6", fontWeight: 700 } : {}) }} onClick={onRecent}>
+          <Sym name="clock" size={13} color={viewingRecent ? "#5E5CE6" : theme.textTertiary} />
+          <span style={{ flex: 1 }}>Recently Viewed</span>
+          {recentCount > 0 && <span style={{ ...ST.bookmarkBadge, background: "#5E5CE622", color: "#5E5CE6" }}>{recentCount}</span>}
+        </button>
         <button style={{ ...ST.sideFooterBtn, ...(viewingBookmarks ? { color: "#FF9F0A", fontWeight: 700 } : {}) }} onClick={onBookmarks}>
           <Sym name={viewingBookmarks ? "star" : "star-outline"} size={13} color={viewingBookmarks ? "#FF9F0A" : theme.textTertiary} />
           <span style={{ flex: 1 }}>Bookmarked Artifacts</span>
@@ -447,7 +551,24 @@ function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, 
   );
 }
 
-function CategoryView({ os, cat, artifacts, expanded, setExpanded, ST, theme, isBookmarked, toggleBookmark }) {
+function ExportButton({ ST, theme }) {
+  return (
+    <button
+      onClick={() => window.print()}
+      style={{
+        display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", flexShrink: 0,
+        background: theme.pillBg, border: "none", borderRadius: 7, cursor: "pointer",
+        padding: "6px 12px", fontSize: 12, fontWeight: 600, color: theme.textSecondary, fontFamily: "inherit",
+      }}
+      title="Export this view as a PDF (opens print dialog — choose 'Save as PDF')"
+    >
+      <Sym name="print" size={13} color={theme.textSecondary} />
+      Export PDF
+    </button>
+  );
+}
+
+function CategoryView({ os, cat, artifacts, expanded, setExpanded, ST, theme, isBookmarked, toggleBookmark, onRecordView }) {
   if (!os || !cat) return <Empty text="Select a platform to begin." ST={ST} />;
   const tint = OS_TINTS[os];
   return (
@@ -460,19 +581,20 @@ function CategoryView({ os, cat, artifacts, expanded, setExpanded, ST, theme, is
           <div style={ST.viewTitle}>{cat}</div>
           <div style={ST.viewSub}>{os} · {artifacts.length} artifact{artifacts.length !== 1 ? "s" : ""}</div>
         </div>
+        <ExportButton ST={ST} theme={theme} />
       </div>
       <div style={ST.cardList}>
         {artifacts.map((a, i) => (
           <ArtifactCard key={i} artifact={a} tint={tint} ST={ST} os={os} cat={cat}
             expanded={expanded === i} onToggle={() => setExpanded(expanded === i ? null : i)}
-            isBookmarked={isBookmarked} toggleBookmark={toggleBookmark} />
+            isBookmarked={isBookmarked} toggleBookmark={toggleBookmark} onRecordView={onRecordView} />
         ))}
       </div>
     </div>
   );
 }
 
-function SearchView({ results, expanded, setExpanded, query, ST, theme, isBookmarked, toggleBookmark }) {
+function SearchView({ results, expanded, setExpanded, query, ST, theme, isBookmarked, toggleBookmark, onRecordView }) {
   return (
     <div style={ST.viewInner} className="fr-view-inner">
       <div style={ST.viewHeader}>
@@ -483,6 +605,7 @@ function SearchView({ results, expanded, setExpanded, query, ST, theme, isBookma
           <div style={ST.viewTitle}>Search Results</div>
           <div style={ST.viewSub}>{results.length} match{results.length !== 1 ? "es" : ""} for "{query}"</div>
         </div>
+        {results.length > 0 && <ExportButton ST={ST} theme={theme} />}
       </div>
       {results.length === 0 ? (
         <Empty text="No artifacts found. Try a tool name, file path, event ID, or MITRE ATT&CK technique." ST={ST} />
@@ -492,7 +615,7 @@ function SearchView({ results, expanded, setExpanded, query, ST, theme, isBookma
             <ArtifactCard key={i} artifact={a} tint={OS_TINTS[a._os]} ST={ST} os={a._os} cat={a._cat}
               badge={`${a._os} · ${a._cat}`}
               expanded={expanded === `s${i}`} onToggle={() => setExpanded(expanded === `s${i}` ? null : `s${i}`)}
-              isBookmarked={isBookmarked} toggleBookmark={toggleBookmark} />
+              isBookmarked={isBookmarked} toggleBookmark={toggleBookmark} onRecordView={onRecordView} />
           ))}
         </div>
       )}
@@ -500,7 +623,7 @@ function SearchView({ results, expanded, setExpanded, query, ST, theme, isBookma
   );
 }
 
-function BookmarksView({ bookmarks, expanded, setExpanded, ST, theme, isBookmarked, toggleBookmark, clearAll }) {
+function BookmarksView({ bookmarks, expanded, setExpanded, ST, theme, isBookmarked, toggleBookmark, clearAll, onRecordView }) {
   return (
     <div style={ST.viewInner} className="fr-view-inner">
       <div style={ST.viewHeader}>
@@ -512,12 +635,15 @@ function BookmarksView({ bookmarks, expanded, setExpanded, ST, theme, isBookmark
           <div style={ST.viewSub}>{bookmarks.length} saved for this case</div>
         </div>
         {bookmarks.length > 0 && (
-          <button
-            onClick={() => { if (confirm("Clear all bookmarks? This can't be undone.")) clearAll(); }}
-            style={{ background: "none", border: "none", color: theme.textTertiary, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
-          >
-            Clear all
-          </button>
+          <>
+            <ExportButton ST={ST} theme={theme} />
+            <button
+              onClick={() => { if (confirm("Clear all bookmarks? This can't be undone.")) clearAll(); }}
+              style={{ background: "none", border: "none", color: theme.textTertiary, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
+            >
+              Clear all
+            </button>
+          </>
         )}
       </div>
       {bookmarks.length === 0 ? (
@@ -540,6 +666,7 @@ function BookmarksView({ bookmarks, expanded, setExpanded, ST, theme, isBookmark
                 onToggle={() => setExpanded(expanded === `b${i}` ? null : `b${i}`)}
                 isBookmarked={isBookmarked}
                 toggleBookmark={toggleBookmark}
+                onRecordView={onRecordView}
               />
             ))}
         </div>
@@ -548,11 +675,61 @@ function BookmarksView({ bookmarks, expanded, setExpanded, ST, theme, isBookmark
   );
 }
 
-function ArtifactCard({ artifact, tint, badge, expanded, onToggle, ST, os, cat, isBookmarked, toggleBookmark }) {
+function RecentView({ recent, expanded, setExpanded, ST, theme, isBookmarked, toggleBookmark, onRecordView, clearAll }) {
+  return (
+    <div style={ST.viewInner} className="fr-view-inner">
+      <div style={ST.viewHeader}>
+        <span style={{ ...ST.viewIconWrap, background: "#5E5CE61E" }}>
+          <Sym name="clock" size={17} color="#5E5CE6" />
+        </span>
+        <div style={{ flex: 1 }}>
+          <div style={ST.viewTitle}>Recently Viewed</div>
+          <div style={ST.viewSub}>Last {recent.length} artifact{recent.length !== 1 ? "s" : ""} opened this session</div>
+        </div>
+        {recent.length > 0 && (
+          <button
+            onClick={() => { if (confirm("Clear recently viewed history?")) clearAll(); }}
+            style={{ background: "none", border: "none", color: theme.textTertiary, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+      {recent.length === 0 ? (
+        <Empty text={"Nothing viewed yet.\nArtifacts you expand will show up here for quick access."} ST={ST} />
+      ) : (
+        <div style={ST.cardList}>
+          {recent.map((r, i) => (
+            <ArtifactCard
+              key={r.artifact.artifact + i}
+              artifact={r.artifact}
+              tint={OS_TINTS[r.artifact._os] || "#0A84FF"}
+              ST={ST}
+              os={r.artifact._os}
+              cat={r.artifact._cat}
+              badge={`${r.artifact._os} · ${r.artifact._cat}`}
+              expanded={expanded === `r${i}`}
+              onToggle={() => setExpanded(expanded === `r${i}` ? null : `r${i}`)}
+              isBookmarked={isBookmarked}
+              toggleBookmark={toggleBookmark}
+              onRecordView={onRecordView}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ArtifactCard({ artifact, tint, badge, expanded, onToggle, ST, os, cat, isBookmarked, toggleBookmark, onRecordView }) {
   const bookmarked = isBookmarked ? isBookmarked(artifact, os, cat) : false;
+  const handleToggle = () => {
+    if (!expanded && onRecordView) onRecordView(artifact, os, cat);
+    onToggle();
+  };
   return (
     <div style={{ ...ST.card, ...(expanded ? { boxShadow: `0 0 0 1px ${tint}55, 0 8px 24px rgba(0,0,0,0.35)` } : {}) }}>
-      <button style={ST.cardHead} onClick={onToggle}>
+      <button style={ST.cardHead} onClick={handleToggle}>
         <div style={ST.cardHeadLeft}>
           {badge && <span style={ST.cardBadge}>{badge}</span>}
           <span style={{ ...ST.cardTitle, color: expanded ? tint : ST._text }}>{artifact.artifact}</span>
@@ -642,9 +819,32 @@ function ArtifactCard({ artifact, tint, badge, expanded, onToggle, ST, os, cat, 
               </div>
             </FieldBlock>
           )}
+          <SuggestEditLink artifact={artifact} os={os} cat={cat} ST={ST} />
         </div>
       )}
     </div>
+  );
+}
+
+function SuggestEditLink({ artifact, os, cat, ST }) {
+  const issueTitle = encodeURIComponent(`Correction: "${artifact.artifact}" (${os || "?"} / ${cat || "?"})`);
+  const issueBody = encodeURIComponent(
+    `Artifact: ${artifact.artifact}\nPlatform: ${os || "unknown"}\nCategory: ${cat || "unknown"}\n\nWhat's inaccurate or out of date:\n\n\nSuggested correction:\n`
+  );
+  const href = `${GITHUB_REPO_URL}/issues/new?title=${issueTitle}&body=${issueBody}`;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 5, marginTop: 2,
+        fontSize: 11, color: ST._textTertiary, textDecoration: "none",
+      }}
+    >
+      <Sym name="flag" size={11} color={ST._textTertiary} />
+      Suggest an edit to this artifact
+    </a>
   );
 }
 
@@ -679,6 +879,7 @@ function StatusBar({ total, selectedOS, selectedCat, isSearching, resultCount, S
           ? `${resultCount} results`
           : `${selectedOS || ""} ${selectedCat ? "› " + selectedCat : ""}`}
       </span>
+      <span className="fr-hide-mobile" style={{ marginLeft: 16, opacity: 0.7 }}>↑↓ navigate · Enter/Esc toggle · ⌘K search</span>
       <span style={{ marginLeft: "auto" }}>{total} artifacts indexed · AI-generated reference, verify before operational use</span>
     </div>
   );

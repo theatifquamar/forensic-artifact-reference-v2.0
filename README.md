@@ -22,6 +22,11 @@ The artifact content in this reference was generated with AI assistance and has 
   - **Sources** — where the artifact is commonly documented, for credibility and further reading
 - **Fully responsive** — desktop window chrome collapses to a mobile-friendly drawer layout below 860px
 - **SEO-ready** — Open Graph/Twitter cards, JSON-LD structured data, sitemap, robots.txt
+- **PDF / print export** — export the current category, search results, bookmarks, or a triage checklist as a clean printable document (browser's native "Save as PDF")
+- **Triage Checklist Builder** — pick an incident type (ransomware, insider threat, lateral movement, malware execution, mobile investigation) and a platform to get a prioritized, checkable pull order of the highest-value artifacts for that scenario (`src/triageChecklists.js`, `src/TriageBuilder.jsx`)
+- **Recently Viewed** — the last 12 artifacts you've opened this session, for quick re-access (`src/useRecentlyViewed.js`)
+- **Keyboard navigation** — ↑/↓ to move between artifacts, Enter/Esc to expand/collapse, ⌘K (or Ctrl+K) to jump to search
+- **Suggest an edit** — every artifact card has a link that opens a pre-filled GitHub issue for reporting corrections
 
 ## Adding, editing, or removing artifacts
 
@@ -89,21 +94,30 @@ Output goes to `dist/` — deploy that folder to any static host (Vercel, Netlif
 
 ```
 src/
-  App.jsx             Main UI shell, icons, layout
-  ThemeContext.jsx    Dark/light mode provider + persisted preference
-  CopyButton.jsx      One-tap copy-to-clipboard component
-  useBookmarks.js     Bookmark/case-notes hook (localStorage-backed)
-  Logo.jsx            App logo (fingerprint + magnifier mark)
-  PolicyPage.jsx       About / policy / liability page
-  database.js         Assembles all platform files + search/count helpers
-  artifacts/          Per-platform artifact data (see above)
+  App.jsx               Main UI shell, icons, layout, keyboard navigation
+  ThemeContext.jsx      Dark/light mode provider + persisted preference
+  CopyButton.jsx        One-tap copy-to-clipboard component
+  useBookmarks.js       Bookmark/case-notes hook (localStorage-backed)
+  useRecentlyViewed.js  Recently-viewed-artifacts hook (localStorage-backed)
+  TriageBuilder.jsx     Triage Checklist Builder UI
+  triageChecklists.js   Curated incident-type → artifact priority lists
+  PrintExport.jsx       Hidden print-only view, revealed via @media print
+  Logo.jsx              App logo (fingerprint + magnifier mark)
+  PolicyPage.jsx        About / policy / liability page
+  database.js           Assembles all platform files + search/count helpers
+  artifacts/            Per-platform artifact data (see above)
 public/
-  logo-source.svg     App icon source
-  og-source.svg       Social share image source
-  og-image.png        Rendered social share image (1200×630)
+  logo-source.svg       App icon source
+  og-source.svg         Social share image source
+  og-image.png          Rendered social share image (1200×630)
   robots.txt
   sitemap.xml
 ```
+
+**Before deploying your own copy:** open `src/App.jsx` and update the
+`GITHUB_REPO_URL` constant near the top to point at your actual repo — it's
+used by the "Suggest an edit" link on every artifact card to open a
+pre-filled GitHub issue.
 
 ## Tech stack
 
