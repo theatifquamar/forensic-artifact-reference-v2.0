@@ -210,9 +210,10 @@ function AppInner() {
     : { title: selectedCat || "", subtitle: selectedOS ? `${selectedOS} · ${artifacts.length} artifact${artifacts.length !== 1 ? "s" : ""}` : "", artifacts };
 
   return (
-    <div style={ST.desktop}>
-      <ResponsiveStyles />
-      <MenuBar dateStr={dateStr} timeStr={timeStr} onPolicy={() => setRoute("policy")} ST={ST} />
+    <>
+      <div style={ST.desktop}>
+        <ResponsiveStyles />
+        <MenuBar dateStr={dateStr} timeStr={timeStr} onPolicy={() => setRoute("policy")} ST={ST} />
 
       <div style={ST.windowWrap}>
         <div style={ST.window} className="fr-window">
@@ -322,9 +323,10 @@ function AppInner() {
           <StatusBar total={totalArtifacts} selectedOS={selectedOS} selectedCat={selectedCat} isSearching={isSearching} resultCount={searchResults.length} ST={ST} viewingBookmarks={viewingBookmarks} bookmarkCount={bookmarks.length} />
         </div>
       </div>
+      </div>
 
       <PrintExport title={printData.title} subtitle={printData.subtitle} artifacts={printData.artifacts} theme={theme} />
-    </div>
+    </>
   );
 }
 
@@ -590,7 +592,6 @@ function CategoryView({ os, cat, artifacts, expanded, setExpanded, ST, theme, is
           <div style={ST.viewTitle}>{cat}</div>
           <div style={ST.viewSub}>{os} · {artifacts.length} artifact{artifacts.length !== 1 ? "s" : ""}</div>
         </div>
-        <ExportButton ST={ST} theme={theme} />
       </div>
       <div style={ST.cardList}>
         {artifacts.map((a, i) => (
@@ -614,7 +615,6 @@ function SearchView({ results, expanded, setExpanded, query, ST, theme, isBookma
           <div style={ST.viewTitle}>Search Results</div>
           <div style={ST.viewSub}>{results.length} match{results.length !== 1 ? "es" : ""} for "{query}"</div>
         </div>
-        {results.length > 0 && <ExportButton ST={ST} theme={theme} />}
       </div>
       {results.length === 0 ? (
         <Empty text="No artifacts found. Try a tool name, file path, event ID, or MITRE ATT&CK technique." ST={ST} />

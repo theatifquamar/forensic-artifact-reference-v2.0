@@ -10,7 +10,19 @@ All notable changes to the Forensic Artifact Reference project, by version.
 
 ---
 
-## v1.7 — PDF Theme-Awareness, Correct Repo URL, Visible Back Button (current)
+## v1.8 — Actual Print Fix (DOM Nesting Bug), PDF Export Limited to Bookmarks & Triage (current)
+
+**The real root cause of the print bug, finally found**
+- Every previous "fix" (theme colors, print-color-adjust, triage data reporting) was necessary but not sufficient — the actual bug was structural: `<PrintExport>` was rendered as a *child* of the app's main `<div style={ST.desktop}>` wrapper, not a sibling of it. The print CSS rule (`#root > div:not(.fr-print-root) { display: none !important; }`) only hides **direct children** of `#root` — so it was hiding the *entire* `ST.desktop` wrapper, `PrintExport` included, since `PrintExport` was nested inside it rather than escaping it. This meant the print view had no way to ever actually display, regardless of any styling or data fixes layered on top.
+- Fixed by restructuring `AppInner`'s return to a `<>...</>` fragment containing two true siblings: the `ST.desktop` div and `<PrintExport>`. Verified this time with an actual AST-level structural check (parsed the JSX, confirmed exactly 2 element children directly under the fragment root) rather than assuming from a successful build alone — a build can succeed with this exact bug present, since it's a runtime/DOM issue, not a syntax error.
+
+**PDF export now limited to Bookmarks and Triage Checklist only**
+- Removed the "Export PDF" button from Category view and Search Results view, per updated requirements
+- Bookmarked Artifacts and Triage Checklist retain their own "Export PDF" buttons, each correctly scoped to their own data (see v1.7 for the Triage-specific data-reporting fix, and v1.7/v1.8 combined for why it can now actually render)
+
+---
+
+## v1.7 — PDF Theme-Awareness, Correct Repo URL, Visible Back Button
 
 **PDF export fixes**
 - `PrintExport.jsx` was hardcoded to a fixed light-mode palette (`#111` text, `#ccc` borders, etc.) regardless of the active on-screen theme — now accepts a `theme` prop and builds its styles dynamically from the same theme object the rest of the app uses, so a dark-mode export prints with dark backgrounds and light text, and light mode exports light
