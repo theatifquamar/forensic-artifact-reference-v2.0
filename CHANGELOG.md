@@ -10,7 +10,26 @@ All notable changes to the Forensic Artifact Reference project, by version.
 
 ---
 
-## v1.6 — PDF Export, Triage Checklists, Recently Viewed, Keyboard Nav, Suggest an Edit (current)
+## v1.7 — PDF Theme-Awareness, Correct Repo URL, Visible Back Button (current)
+
+**PDF export fixes**
+- `PrintExport.jsx` was hardcoded to a fixed light-mode palette (`#111` text, `#ccc` borders, etc.) regardless of the active on-screen theme — now accepts a `theme` prop and builds its styles dynamically from the same theme object the rest of the app uses, so a dark-mode export prints with dark backgrounds and light text, and light mode exports light
+- Removed a `html, body { background: #fff !important; }` override in the print CSS that fought against theme-aware backgrounds
+- Added `print-color-adjust: exact` (plus vendor-prefixed variants) to the print CSS, which forces browsers to render background/accent colors in the print output even when the user hasn't manually enabled "Background graphics" in their print dialog — the likely cause of the reported "black and white page" symptom
+- Added a sane default `@page` margin for print output
+- **Fixed a separate, more serious bug: exporting from the Triage Checklist Builder printed the wrong (or empty) artifacts.** `TriageBuilder` tracked its own `incidentType`/`selectedOS`/resolved-artifacts state entirely internally and never reported it to the parent app, so the shared "Export PDF" button — which prints whatever the top-level `<PrintExport>` currently holds — fell through to whatever OS/category had been selected *before* entering Triage mode, or printed nothing if none had been. Fixed by adding an `onPrintDataChange` callback that `TriageBuilder` calls whenever its incident type, platform, or artifact list changes, so the parent's print data always reflects the actual checklist on screen.
+
+**Suggest an edit — corrected link + visibility**
+- Fixed the GitHub issue link, which was pointing at a placeholder repo and returning 404 — `GITHUB_REPO_URL` now correctly points to `https://github.com/theatifquamar/forensic-artifact-reference-v2.0`
+- Redesigned the link from a barely-visible muted-gray text line into a clearly visible blue pill button (matching the app's system-blue accent), with a top border separating it from the artifact's other fields
+
+**Triage Checklist Builder — back button**
+- Both back buttons (incident-type screen and platform screen) previously rendered as a bare, low-contrast chevron icon with no label or button chrome — one of them even pointed in the wrong direction (right instead of left)
+- Both now render as a proper pill-shaped button with background, a correctly left-pointing chevron, and a "Back" label
+
+---
+
+## v1.6 — PDF Export, Triage Checklists, Recently Viewed, Keyboard Nav, Suggest an Edit
 
 **PDF / print export**
 - New `src/PrintExport.jsx` — a hidden, print-only document view revealed via `@media print`, so clicking "Export PDF" (browser's native print-to-PDF) produces a clean report instead of a screenshot of the app chrome

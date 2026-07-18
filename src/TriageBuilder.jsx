@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DB } from "./database.js";
 import { TRIAGE_CHECKLISTS, getChecklistTypes } from "./triageChecklists.js";
 
@@ -19,7 +19,7 @@ function resolveArtifacts(os, names) {
   return out;
 }
 
-export default function TriageBuilder({ ST, theme, Sym, ArtifactCard, isBookmarked, toggleBookmark, ExportButton, onRecordView }) {
+export default function TriageBuilder({ ST, theme, Sym, ArtifactCard, isBookmarked, toggleBookmark, ExportButton, onRecordView, onPrintDataChange }) {
   const [incidentType, setIncidentType] = useState(null);
   const [selectedOS, setSelectedOS] = useState(null);
   const [expanded, setExpanded] = useState(null);
@@ -30,6 +30,23 @@ export default function TriageBuilder({ ST, theme, Sym, ArtifactCard, isBookmark
   const osOptions = checklist ? Object.keys(DB).filter((os) => (checklist[os] || []).length > 0) : [];
   const artifacts = checklist && selectedOS ? resolveArtifacts(selectedOS, checklist[selectedOS]) : [];
 
+  // Report the artifacts actually on screen up to the parent, so the app-level
+  // "Export PDF" (which prints whatever is currently in <PrintExport>) always
+  // reflects this view rather than whatever OS/category was selected before
+  // entering the Triage Checklist Builder.
+  useEffect(() => {
+    if (!onPrintDataChange) return;
+    if (!incidentType || !selectedOS) {
+      onPrintDataChange(null); // nothing meaningful to export yet — let the parent fall back
+      return;
+    }
+    onPrintDataChange({
+      title: `Triage Checklist — ${incidentType}`,
+      subtitle: `${selectedOS} · ${artifacts.length} artifact${artifacts.length !== 1 ? "s" : ""} in priority order`,
+      artifacts,
+    });
+  }, [incidentType, selectedOS, artifacts.length]);
+
   const toggleCheck = (name) => {
     setCheckedOff((prev) => ({ ...prev, [name]: !prev[name] }));
   };
@@ -39,6 +56,7 @@ export default function TriageBuilder({ ST, theme, Sym, ArtifactCard, isBookmark
     setSelectedOS(null);
     setCheckedOff({});
     setExpanded(null);
+    if (onPrintDataChange) onPrintDataChange(null);
   };
 
   if (!incidentType) {
@@ -70,9 +88,11 @@ export default function TriageBuilder({ ST, theme, Sym, ArtifactCard, isBookmark
     return (
       <div style={ST.viewInner} className="fr-view-inner">
         <div style={ST.viewHeader}>
-          <button onClick={reset} style={{ ...T.backBtn, color: theme.textTertiary }}>
-            <Sym name="chevron" size={12} color={theme.textTertiary} />
-            <span style={{ transform: "rotate(180deg)", display: "inline-block" }} />
+          <button onClick={reset} style={{ ...T.backBtn, background: theme.pillBg, color: theme.textSecondary }}>
+            <span style={{ display: "inline-flex", transform: "rotate(180deg)" }}>
+              <Sym name="chevron" size={12} color={theme.textSecondary} />
+            </span>
+            Back
           </button>
           <span style={{ ...ST.viewIconWrap, background: "#30D15822" }}>
             <Sym name="checklist" size={18} color="#30D158" />
@@ -100,8 +120,11 @@ export default function TriageBuilder({ ST, theme, Sym, ArtifactCard, isBookmark
   return (
     <div style={ST.viewInner} className="fr-view-inner">
       <div style={ST.viewHeader}>
-        <button onClick={() => setSelectedOS(null)} style={{ ...T.backBtn, color: theme.textTertiary }}>
-          <Sym name="chevron" size={12} color={theme.textTertiary} />
+        <button onClick={() => setSelectedOS(null)} style={{ ...T.backBtn, background: theme.pillBg, color: theme.textSecondary }}>
+          <span style={{ display: "inline-flex", transform: "rotate(180deg)" }}>
+            <Sym name="chevron" size={12} color={theme.textSecondary} />
+          </span>
+          Back
         </button>
         <span style={{ ...ST.viewIconWrap, background: "#30D15822" }}>
           <Sym name="checklist" size={18} color="#30D158" />
@@ -156,6 +179,10 @@ const T = {
   card: { border: "none", borderRadius: 10, padding: "14px 16px", textAlign: "left", cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", gap: 6 },
   cardTitle: { fontSize: 14, fontWeight: 700 },
   cardDesc: { fontSize: 12, lineHeight: 1.5 },
-  backBtn: { background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", flexShrink: 0 },
+  backBtn: {
+    display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
+    border: "none", cursor: "pointer", fontFamily: "inherit",
+    fontSize: 12.5, fontWeight: 600, borderRadius: 20, padding: "6px 12px 6px 10px",
+  },
   startOverBtn: { background: "none", border: "none", fontSize: 12, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 },
 };

@@ -10,7 +10,7 @@ import PrintExport from "./PrintExport.jsx";
 import TriageBuilder from "./TriageBuilder.jsx";
 
 // EDIT THIS to point at your actual GitHub repo — used by the "Suggest an edit" link on every artifact card.
-const GITHUB_REPO_URL = "https://github.com/atifquamar/forensic-artifact-reference";
+const GITHUB_REPO_URL = "https://github.com/theatifquamar/forensic-artifact-reference-v2.0";
 
 const CAT_SYMBOL = {
   "Authentication": "key", "File Activity": "folder", "Browsing Activity": "globe",
@@ -120,6 +120,7 @@ function AppInner() {
   const [viewingBookmarks, setViewingBookmarks] = useState(false);
   const [viewingTriage, setViewingTriage] = useState(false);
   const [viewingRecent, setViewingRecent] = useState(false);
+  const [triagePrintData, setTriagePrintData] = useState(null);
   const searchRef = useRef(null);
   const { bookmarks, isBookmarked, toggleBookmark, clearAll } = useBookmarks();
   const { recent, recordView, clearAll: clearRecent } = useRecentlyViewed();
@@ -178,8 +179,8 @@ function AppInner() {
     return () => window.removeEventListener("keydown", handler);
   }, [expanded, activeList, activePrefix, viewingTriage]);
 
-  const handleOS = (os) => { setSelectedOS(os); setSelectedCat(Object.keys(DB[os])[0]); setExpanded(null); setNavOpen(false); setViewingBookmarks(false); setViewingTriage(false); setViewingRecent(false); setSearch(""); };
-  const handleCat = (cat) => { setSelectedCat(cat); setExpanded(null); setNavOpen(false); setViewingBookmarks(false); setViewingTriage(false); setViewingRecent(false); };
+  const handleOS = (os) => { setSelectedOS(os); setSelectedCat(Object.keys(DB[os])[0]); setExpanded(null); setNavOpen(false); setViewingBookmarks(false); setViewingTriage(false); setViewingRecent(false); setTriagePrintData(null); setSearch(""); };
+  const handleCat = (cat) => { setSelectedCat(cat); setExpanded(null); setNavOpen(false); setViewingBookmarks(false); setViewingTriage(false); setViewingRecent(false); setTriagePrintData(null); };
 
   useEffect(() => {
     if (selectedOS && !selectedCat) setSelectedCat(Object.keys(DB[selectedOS])[0]);
@@ -187,7 +188,7 @@ function AppInner() {
 
   useEffect(() => {
     if (search.trim().length > 0 && viewingBookmarks) setViewingBookmarks(false);
-    if (search.trim().length > 0 && viewingTriage) setViewingTriage(false);
+    if (search.trim().length > 0 && viewingTriage) { setViewingTriage(false); setTriagePrintData(null); }
     if (search.trim().length > 0 && viewingRecent) setViewingRecent(false);
   }, [search]);
 
@@ -198,7 +199,9 @@ function AppInner() {
     return <PolicyPage onBack={() => setRoute("app")} time={{ dateStr, timeStr }} />;
   }
 
-  const printData = viewingRecent
+  const printData = (viewingTriage && triagePrintData)
+    ? triagePrintData
+    : viewingRecent
     ? { title: "Recently Viewed", subtitle: `Last ${recent.length} artifact${recent.length !== 1 ? "s" : ""} opened this session`, artifacts: recent.map(r => r.artifact) }
     : viewingBookmarks
     ? { title: "Bookmarked Artifacts", subtitle: `${bookmarks.length} saved for this case`, artifacts: bookmarks.map(b => b.artifact) }
@@ -241,12 +244,12 @@ function AppInner() {
                 theme={theme}
                 bookmarkCount={bookmarks.length}
                 viewingBookmarks={viewingBookmarks}
-                onBookmarks={() => { setViewingBookmarks(true); setViewingTriage(false); setViewingRecent(false); setSearch(""); setNavOpen(false); }}
+                onBookmarks={() => { setViewingBookmarks(true); setViewingTriage(false); setViewingRecent(false); setTriagePrintData(null); setSearch(""); setNavOpen(false); }}
                 viewingTriage={viewingTriage}
                 onTriage={() => { setViewingTriage(true); setViewingBookmarks(false); setViewingRecent(false); setSearch(""); setNavOpen(false); }}
                 recentCount={recent.length}
                 viewingRecent={viewingRecent}
-                onRecent={() => { setViewingRecent(true); setViewingBookmarks(false); setViewingTriage(false); setSearch(""); setNavOpen(false); }}
+                onRecent={() => { setViewingRecent(true); setViewingBookmarks(false); setViewingTriage(false); setTriagePrintData(null); setSearch(""); setNavOpen(false); }}
               />
             </div>
 
@@ -261,6 +264,7 @@ function AppInner() {
                   toggleBookmark={toggleBookmark}
                   ExportButton={ExportButton}
                   onRecordView={recordView}
+                  onPrintDataChange={setTriagePrintData}
                 />
               ) : viewingRecent ? (
                 <RecentView
@@ -319,7 +323,7 @@ function AppInner() {
         </div>
       </div>
 
-      <PrintExport title={printData.title} subtitle={printData.subtitle} artifacts={printData.artifacts} />
+      <PrintExport title={printData.title} subtitle={printData.subtitle} artifacts={printData.artifacts} theme={theme} />
     </div>
   );
 }
@@ -386,9 +390,14 @@ function ResponsiveStyles() {
       .fr-print-root { display: none; }
 
       @media print {
-        html, body { background: #fff !important; }
         #root > div:not(.fr-print-root) { display: none !important; }
-        .fr-print-root { display: block !important; }
+        .fr-print-root {
+          display: block !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+          color-adjust: exact;
+        }
+        @page { margin: 14mm 12mm; }
       }
     `}</style>
   );
@@ -833,18 +842,22 @@ function SuggestEditLink({ artifact, os, cat, ST }) {
   );
   const href = `${GITHUB_REPO_URL}/issues/new?title=${issueTitle}&body=${issueBody}`;
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{
-        display: "inline-flex", alignItems: "center", gap: 5, marginTop: 2,
-        fontSize: 11, color: ST._textTertiary, textDecoration: "none",
-      }}
-    >
-      <Sym name="flag" size={11} color={ST._textTertiary} />
-      Suggest an edit to this artifact
-    </a>
+    <div style={{ marginTop: 6, paddingTop: 12, borderTop: `1px solid ${ST._borderColorSoft}` }}>
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          fontSize: 12, fontWeight: 600, color: "#0A84FF", textDecoration: "none",
+          background: "#0A84FF16", border: "1px solid #0A84FF44",
+          borderRadius: 20, padding: "5px 12px",
+        }}
+      >
+        <Sym name="flag" size={12} color="#0A84FF" />
+        Suggest an edit to this artifact
+      </a>
+    </div>
   );
 }
 
@@ -893,6 +906,7 @@ function buildStyles(theme) {
     _iconColor: t.textSecondary,
     _iconColorMuted: t.textTertiary,
     _chevronColor: t.name === "dark" ? "#636366" : "#B8B8BC",
+    _borderColorSoft: t.borderColorSoft,
 
     desktop: {
       minHeight: "100vh",
