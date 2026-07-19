@@ -8,6 +8,7 @@ import { useBookmarks } from "./useBookmarks.js";
 import { useRecentlyViewed } from "./useRecentlyViewed.js";
 import PrintExport from "./PrintExport.jsx";
 import TriageBuilder from "./TriageBuilder.jsx";
+import { getChecklistTypes } from "./triageChecklists.js";
 
 // EDIT THIS to point at your actual GitHub repo — used by the "Suggest an edit" link on every artifact card.
 const GITHUB_REPO_URL = "https://github.com/theatifquamar/forensic-artifact-reference-v2.0";
@@ -81,6 +82,7 @@ function Sym({ name, size = 15, color = "currentColor" }) {
     case "book": return <svg style={s} viewBox="0 0 24 24"><path d="M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z" {...common}/><path d="M5 4a3 3 0 0 0-1 2.2V17a3 3 0 0 0 3 3" {...common}/></svg>;
     case "clock": return <svg style={s} viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" {...common}/><path d="M12 7v5l3.5 2" {...common}/></svg>;
     case "flag": return <svg style={s} viewBox="0 0 24 24"><path d="M5 3v18M5 4h11l-2.5 3.5L16 11H5" {...common}/></svg>;
+    case "bolt": return <svg style={s} viewBox="0 0 24 24" fill={color === "none" ? "none" : "currentColor"} stroke={color} strokeWidth="1.2"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" strokeLinejoin="round"/></svg>;
     case "target": return <svg style={s} viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" {...common}/><circle cx="12" cy="12" r="4" {...common}/><circle cx="12" cy="12" r=".6" fill={color} stroke="none"/></svg>;
     case "bookmark-list": return <svg style={s} viewBox="0 0 24 24"><path d="M6 3h9a2 2 0 0 1 2 2v16l-6.5-4L4 21V5a2 2 0 0 1 2-2Z" {...common}/></svg>;
     default: return <svg style={s} viewBox="0 0 24 24"><circle cx="12" cy="12" r="2" fill={color} stroke="none"/></svg>;
@@ -134,6 +136,7 @@ function AppInner() {
   const artifacts = (selectedOS && selectedCat) ? (DB[selectedOS][selectedCat] || []) : [];
 
   const totalArtifacts = useMemo(() => countArtifacts(), []);
+  const playbookCount = useMemo(() => getChecklistTypes().length, []);
   const searchResults = useMemo(() => searchArtifacts(search), [search]);
 
   const isSearching = search.trim().length > 0;
@@ -248,6 +251,7 @@ function AppInner() {
                 onBookmarks={() => { setViewingBookmarks(true); setViewingTriage(false); setViewingRecent(false); setTriagePrintData(null); setSearch(""); setNavOpen(false); }}
                 viewingTriage={viewingTriage}
                 onTriage={() => { setViewingTriage(true); setViewingBookmarks(false); setViewingRecent(false); setSearch(""); setNavOpen(false); }}
+                playbookCount={playbookCount}
                 recentCount={recent.length}
                 viewingRecent={viewingRecent}
                 onRecent={() => { setViewingRecent(true); setViewingBookmarks(false); setViewingTriage(false); setTriagePrintData(null); setSearch(""); setNavOpen(false); }}
@@ -499,7 +503,7 @@ function TitleBar({ total, search, setSearch, searchRef, navOpen, setNavOpen, mo
   );
 }
 
-function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, ST, theme, bookmarkCount, viewingBookmarks, onBookmarks, viewingTriage, onTriage, recentCount, viewingRecent, onRecent }) {
+function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, ST, theme, bookmarkCount, viewingBookmarks, onBookmarks, viewingTriage, onTriage, recentCount, viewingRecent, onRecent, playbookCount }) {
   const categories = selectedOS ? Object.keys(DB[selectedOS]) : [];
   return (
     <div style={ST.sidebar}>
@@ -540,8 +544,9 @@ function Sidebar({ selectedOS, selectedCat, onOS, onCat, isSearching, onPolicy, 
 
       <div style={ST.sideFooter}>
         <button style={{ ...ST.sideFooterBtn, ...(viewingTriage ? { color: "#30D158", fontWeight: 700 } : {}) }} onClick={onTriage}>
-          <Sym name="checklist" size={13} color={viewingTriage ? "#30D158" : theme.textTertiary} />
-          <span style={{ flex: 1 }}>Triage Checklist</span>
+          <Sym name="bolt" size={13} color={viewingTriage ? "#30D158" : theme.textTertiary} />
+          <span style={{ flex: 1 }}>Incident Playbooks</span>
+          {playbookCount > 0 && <span style={{ ...ST.bookmarkBadge, background: "#30D15822", color: "#30D158" }}>{playbookCount}</span>}
         </button>
         <button style={{ ...ST.sideFooterBtn, ...(viewingRecent ? { color: "#5E5CE6", fontWeight: 700 } : {}) }} onClick={onRecent}>
           <Sym name="clock" size={13} color={viewingRecent ? "#5E5CE6" : theme.textTertiary} />

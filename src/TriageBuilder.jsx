@@ -33,7 +33,7 @@ export default function TriageBuilder({ ST, theme, Sym, ArtifactCard, isBookmark
   // Report the artifacts actually on screen up to the parent, so the app-level
   // "Export PDF" (which prints whatever is currently in <PrintExport>) always
   // reflects this view rather than whatever OS/category was selected before
-  // entering the Triage Checklist Builder.
+  // entering the Incident Playbooks view.
   useEffect(() => {
     if (!onPrintDataChange) return;
     if (!incidentType || !selectedOS) {
@@ -41,7 +41,7 @@ export default function TriageBuilder({ ST, theme, Sym, ArtifactCard, isBookmark
       return;
     }
     onPrintDataChange({
-      title: `Triage Checklist — ${incidentType}`,
+      title: `Incident Playbook — ${incidentType}`,
       subtitle: `${selectedOS} · ${artifacts.length} artifact${artifacts.length !== 1 ? "s" : ""} in priority order`,
       artifacts,
     });
@@ -64,10 +64,10 @@ export default function TriageBuilder({ ST, theme, Sym, ArtifactCard, isBookmark
       <div style={ST.viewInner} className="fr-view-inner">
         <div style={ST.viewHeader}>
           <span style={{ ...ST.viewIconWrap, background: "#30D15822" }}>
-            <Sym name="checklist" size={18} color="#30D158" />
+            <Sym name="bolt" size={18} color="#30D158" />
           </span>
           <div>
-            <div style={ST.viewTitle}>Triage Checklist Builder</div>
+            <div style={ST.viewTitle}>Incident Playbooks</div>
             <div style={ST.viewSub}>Pick an incident type to get a prioritized artifact pull order</div>
           </div>
         </div>
@@ -95,7 +95,7 @@ export default function TriageBuilder({ ST, theme, Sym, ArtifactCard, isBookmark
             Back
           </button>
           <span style={{ ...ST.viewIconWrap, background: "#30D15822" }}>
-            <Sym name="checklist" size={18} color="#30D158" />
+            <Sym name="bolt" size={18} color="#30D158" />
           </span>
           <div>
             <div style={ST.viewTitle}>{incidentType}</div>
@@ -127,7 +127,7 @@ export default function TriageBuilder({ ST, theme, Sym, ArtifactCard, isBookmark
           Back
         </button>
         <span style={{ ...ST.viewIconWrap, background: "#30D15822" }}>
-          <Sym name="checklist" size={18} color="#30D158" />
+          <Sym name="bolt" size={18} color="#30D158" />
         </span>
         <div style={{ flex: 1 }}>
           <div style={ST.viewTitle}>{incidentType} — {selectedOS}</div>

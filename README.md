@@ -23,7 +23,7 @@ The artifact content in this reference was generated with AI assistance and has 
 - **Fully responsive** — desktop window chrome collapses to a mobile-friendly drawer layout below 860px
 - **SEO-ready** — Open Graph/Twitter cards, JSON-LD structured data, sitemap, robots.txt
 - **PDF / print export** — export the current category, search results, bookmarks, or a triage checklist as a clean printable document (browser's native "Save as PDF")
-- **Triage Checklist Builder** — pick an incident type (ransomware, insider threat, lateral movement, malware execution, mobile investigation) and a platform to get a prioritized, checkable pull order of the highest-value artifacts for that scenario (`src/triageChecklists.js`, `src/TriageBuilder.jsx`)
+- **Incident Playbooks** (formerly "Triage Checklist Builder") — pick from 38 incident types (ransomware, insider threat, BEC, credential attacks, rootkits, C2 beaconing, mobile banking trojans, AD domain compromise, and more) and a platform to get a prioritized, checkable pull order of the highest-value artifacts for that scenario (`src/triageChecklists.js`, `src/TriageBuilder.jsx`)
 - **Recently Viewed** — the last 12 artifacts you've opened this session, for quick re-access (`src/useRecentlyViewed.js`)
 - **Keyboard navigation** — ↑/↓ to move between artifacts, Enter/Esc to expand/collapse, ⌘K (or Ctrl+K) to jump to search
 - **Suggest an edit** — every artifact card has a link that opens a pre-filled GitHub issue for reporting corrections
@@ -99,7 +99,7 @@ src/
   CopyButton.jsx        One-tap copy-to-clipboard component
   useBookmarks.js       Bookmark/case-notes hook (localStorage-backed)
   useRecentlyViewed.js  Recently-viewed-artifacts hook (localStorage-backed)
-  TriageBuilder.jsx     Triage Checklist Builder UI
+  TriageBuilder.jsx     Incident Playbooks UI (component name kept as TriageBuilder internally)
   triageChecklists.js   Curated incident-type → artifact priority lists
   PrintExport.jsx       Hidden print-only view, revealed via @media print
   Logo.jsx              App logo (fingerprint + magnifier mark)

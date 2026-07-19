@@ -10,7 +10,34 @@ All notable changes to the Forensic Artifact Reference project, by version.
 
 ---
 
-## v1.8 — Actual Print Fix (DOM Nesting Bug), PDF Export Limited to Bookmarks & Triage (current)
+## v1.10 — Renamed "Triage Checklist" to "Incident Playbooks" (current)
+
+**Sidebar & heading rename for discoverability**
+- Sidebar entry renamed from "Triage Checklist" to **"Incident Playbooks"**, with a lightning bolt icon and a live count badge (currently 38, computed dynamically from `getChecklistTypes()` so it never goes stale as more playbooks are added)
+- On-screen heading updated to match ("Incident Playbooks") across all three screens of the flow (incident-type picker, platform picker, checklist view) for consistent naming throughout the whole journey
+- PDF export title for this view updated to "Incident Playbook — {incident type}" to match
+- Icon consistency: replaced the generic checklist icon with the same lightning bolt used in the sidebar, on all three screens
+
+---
+
+## v1.9 — 33 New Triage Checklists
+
+**Triage Checklist Builder — expanded from 5 to 38 incident types**
+- Added 33 new curated checklists to `src/triageChecklists.js`, covering:
+  - Network & external-facing: Web Server Compromise, SQL Injection, Public-Facing Service Exploitation, Rogue Wi-Fi/Recon
+  - Identity & credential attacks: Credential Stuffing, BEC, Phishing, Privileged Account Abuse, Kerberoasting, Session Hijacking
+  - Malware & advanced threats: Fileless Malware, Rootkit, Cryptomining, C2 Beaconing, APT Investigation
+  - Data & compliance: IP Theft, Database Exfiltration, Unauthorized Cloud Storage Sharing, Print/Scan Leakage
+  - Insider & HR: Employee Departure, Policy Violation, Harassment Evidence, Sabotage, Unauthorized Software
+  - Cloud/collaboration: SaaS/Collaboration App Data Breach
+  - Physical & hardware: Lost/Stolen Device, USB Drop Attack, Physical Access Correlation
+  - Platform-specific: macOS Malware, Linux Web Shell, Android Banking Trojan, AD Domain Compromise, Exchange Compromise
+- Every one of the 408 total checklist artifact references (across all 38 incident types) was validated against the live database — confirmed zero name mismatches
+- Deliberately excluded from this batch (no supporting artifacts exist yet in the database, would have produced empty/misleading checklists): AWS/Azure/GCP cloud-native compromise, Kubernetes, CI/CD pipeline compromise, serverless abuse, iOS device investigation (no iOS platform exists), DDoS, DNS hijacking, MITM, hardware keyloggers, GDPR/PCI-DSS as standalone categories (would duplicate existing data-focused checklists)
+
+---
+
+## v1.8 — Actual Print Fix (DOM Nesting Bug), PDF Export Limited to Bookmarks & Triage
 
 **The real root cause of the print bug, finally found**
 - Every previous "fix" (theme colors, print-color-adjust, triage data reporting) was necessary but not sufficient — the actual bug was structural: `<PrintExport>` was rendered as a *child* of the app's main `<div style={ST.desktop}>` wrapper, not a sibling of it. The print CSS rule (`#root > div:not(.fr-print-root) { display: none !important; }`) only hides **direct children** of `#root` — so it was hiding the *entire* `ST.desktop` wrapper, `PrintExport` included, since `PrintExport` was nested inside it rather than escaping it. This meant the print view had no way to ever actually display, regardless of any styling or data fixes layered on top.
